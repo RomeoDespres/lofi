@@ -18,12 +18,12 @@ _T = TypeVar("_T")
 
 
 @overload
-def env_var(name: str) -> str:
+def env_var(name: str) -> str:  # pragma: no cover
     ...
 
 
 @overload
-def env_var(name: str, type_: Type[_T]) -> _T:
+def env_var(name: str, type_: Type[_T]) -> _T:  # pragma: no cover
     ...
 
 
