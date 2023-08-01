@@ -1,0 +1,58 @@
+name: Validate code
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-line-endings:
+    name: Check line endings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository contents
+        uses: actions/checkout@v3
+
+      - name: Check line endings
+        uses: AODocs/check-eol@main
+
+  check-python-code:
+    name: Check Python code
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+
+    steps:
+      - name: Checkout repository contents
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -e .[dev]
+
+      - name: Check flake8 compliance
+        run: flake8
+
+      - name: Check Black compliance
+        run: black --check .
+
+      - name: Check mypy compliance
+        run: mypy
+
+      - name: Run tests
+        run: coverage run -m pytest
+
+      - name: Coverage comment
+        if: (github.ref_name == 'main') || (github.event_name == 'pull_request')
+        id: coverage_comment
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}

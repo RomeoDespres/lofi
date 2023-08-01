@@ -1,0 +1,10 @@
+[tool.coverage.run]
+omit = ["tests/*"]
+relative_files = true
+
+[tool.mypy]
+files = ["alembic", "lofi", "tests"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

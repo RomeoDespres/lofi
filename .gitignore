@@ -1,0 +1,11 @@
+*.egg-info
+*.log
+.coverage
+.env
+.mypy_cache
+.pytest_cache
+.vscode
+__pycache__
+env
+build
+pgsql
