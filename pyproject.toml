@@ -7,4 +7,9 @@ files = ["alembic", "lofi", "tests"]
 strict = true
 
 [tool.pytest.ini_options]
+env = [
+    'AWS_ACCESS_KEY_ID=""',
+    'AWS_DEFAULT_REGION=""',
+    'AWS_SECRET_ACCESS_KEY=""'
+]
 testpaths = ["tests"]
