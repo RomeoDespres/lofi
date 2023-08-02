@@ -1,55 +1,13 @@
-"""Defines and loads required configuration for the project."""
+import os
 
-from typing import Type, TypeVar, cast, overload
+import dotenv
 
-from decouple import UndefinedValueError, config  # type: ignore
-
-
-__all__ = [
-    "AWS_ACCESS_KEY_ID",
-    "AWS_DEFAULT_REGION",
-    "AWS_SECRET_ACCESS_KEY",
-    "UndefinedValueError",
-    "env_var",
-]
+dotenv.load_dotenv()
 
 
-_T = TypeVar("_T")
+def aws_bucket_name() -> str:
+    return os.environ["AWS_BUCKET_NAME"]
 
 
-@overload
-def env_var(name: str) -> str:  # pragma: no cover
-    ...
-
-
-@overload
-def env_var(name: str, type_: Type[_T]) -> _T:  # pragma: no cover
-    ...
-
-
-def env_var(name: str, type_: Type[_T] | Type[str] = str) -> _T | str:
-    """Load variable from environment or .env file.
-
-    Parameters
-    ----------
-    name : str
-        Environement variable or .env entry name.
-    type_ : type
-        Python type the raw value will be cast to.
-
-    Returns
-    -------
-    Env var value casted to `type_`.
-
-    Examples
-    --------
-    ```python
-    MY_SECRET_PASSWORD = _env_var("MY_SECRET_PASSWORD", type_=str)
-    ```
-    """
-    return cast(_T, config(name, cast=type_))
-
-
-AWS_ACCESS_KEY_ID = env_var("AWS_ACCESS_KEY_ID")
-AWS_DEFAULT_REGION = env_var("AWS_DEFAULT_REGION")
-AWS_SECRET_ACCESS_KEY = env_var("AWS_SECRET_ACCESS_KEY")
+def db_name() -> str:
+    return os.environ["DB_NAME"]
