@@ -2,11 +2,13 @@
 
 
 
-| Name                 |    Stmts |     Miss |    Cover |   Missing |
-|--------------------- | -------: | -------: | -------: | --------: |
-| lofi/\_\_init\_\_.py |        2 |        0 |     100% |           |
-| lofi/env.py          |       11 |        0 |     100% |           |
-|            **TOTAL** |   **13** |    **0** | **100%** |           |
+| Name                    |    Stmts |     Miss |    Cover |   Missing |
+|------------------------ | -------: | -------: | -------: | --------: |
+| lofi/\_\_init\_\_.py    |        2 |        0 |     100% |           |
+| lofi/db/\_\_init\_\_.py |        2 |        0 |     100% |           |
+| lofi/db/connection.py   |       37 |        0 |     100% |           |
+| lofi/env.py             |        7 |        0 |     100% |           |
+|               **TOTAL** |   **48** |    **0** | **100%** |           |
 
 
 ## Setup coverage badge
