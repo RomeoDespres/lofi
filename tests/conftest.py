@@ -77,6 +77,15 @@ def no_local_db(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("LOCAL_DB", raising=False)
 
 
+@pytest.fixture(autouse=True)
+def no_spotify_user_id(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Temporarily delete the `SPOTIFY_USER_ID` environement variable.
+
+    Prevents unwanted API calls against a true Spotify profile.
+    """
+    monkeypatch.delenv("SPOTIFY_USER_ID", raising=False)
+
+
 @pytest.fixture
 def patch_get_s3_client(monkeypatch: pytest.MonkeyPatch) -> PatchedS3Client:
     """Patch `lofi` to use `PatchedS3Client` instead of boto3.

@@ -69,6 +69,7 @@ def test_get_tracklist_diffs(
     assert get_tracklist_diffs(target, current) == (expected_added, expected_removed)
 
 
+@pytest.mark.usefixtures("default_user_id")
 @pytest.mark.parametrize("exc", [ConnectionError, ReadTimeout])
 def test_retry_on_timeout(
     session: db.Session, exc: Type[ConnectionError | ReadTimeout]
