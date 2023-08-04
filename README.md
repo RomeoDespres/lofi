@@ -19,12 +19,12 @@
 | lofi/log.py                                            |       13 |        0 |    100% |           |
 | lofi/spotify\_api/\_\_init\_\_.py                      |        3 |        0 |    100% |           |
 | lofi/spotify\_api/cache\_handler.py                    |       27 |        0 |    100% |           |
-| lofi/spotify\_api/client.py                            |      129 |       27 |     79% |125-135, 147-158, 174-178, 204-211, 215-217 |
-| lofi/spotify\_api/errors.py                            |        5 |        3 |     40% |       3-5 |
+| lofi/spotify\_api/client.py                            |      129 |       14 |     89% |125-135, 174-178, 204-211 |
+| lofi/spotify\_api/errors.py                            |        5 |        0 |    100% |           |
 | lofi/spotify\_api/log.py                               |        2 |        0 |    100% |           |
 | lofi/spotify\_api/models.py                            |       47 |        1 |     98% |        66 |
 | lofi/spotify\_api/token.py                             |        8 |        0 |    100% |           |
-|                                              **TOTAL** |  **625** |  **131** | **79%** |           |
+|                                              **TOTAL** |  **625** |  **115** | **82%** |           |
 
 
 ## Setup coverage badge
