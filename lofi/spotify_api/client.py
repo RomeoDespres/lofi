@@ -142,13 +142,13 @@ class SpotifyAPIClient:
         public: bool = True,
         *,
         allow_duplicates: bool = False,
-        skip_if_alread_exists: bool = False,
+        skip_if_already_exists: bool = False,
     ) -> Playlist:
         LOGGER.info(f"Creating Spotify playlist with {name=}")
         playlists = self.user_playlists(self.user_id)
         matching = [p for p in playlists if p.name == name]
         if matching and not allow_duplicates:
-            if skip_if_alread_exists:
+            if skip_if_already_exists:
                 LOGGER.info("Playlist already exists, skipping")
                 return matching[0]
             raise PlaylistAlreadyExistsError(self.user_id, name, matching[0].id)

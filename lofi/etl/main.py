@@ -26,7 +26,7 @@ def add_label(session: db.Session, label_name: str) -> None:
     if session.get(db.Label, label_name) is not None:
         raise LabelAlreadyExistsError(label_name)
     playlist = SpotifyAPIClient(session).create_playlist(
-        label_name, f"All {label_name} releases", skip_if_alread_exists=True
+        label_name, f"All {label_name} releases", skip_if_already_exists=True
     )
     db_playlist = session.merge(db.Playlist(id=playlist.id))
     session.add(db.Label(name=label_name, playlist=db_playlist))

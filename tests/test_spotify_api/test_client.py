@@ -1,6 +1,6 @@
 import time
 from typing import Any, Sequence, Type
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 from requests import ConnectionError, ReadTimeout
@@ -13,7 +13,8 @@ from lofi.spotify_api.client import (
     get_tracklist_diffs,
     retry_on_timeout,
 )
-from lofi.spotify_api.models import User
+from lofi.spotify_api.errors import PlaylistAlreadyExistsError
+from lofi.spotify_api.models import Playlist, User
 
 
 @pytest.fixture
@@ -158,3 +159,65 @@ def test_snapshot_id(session: db.Session) -> None:
     snapshot_id = "foo"
     api = get_patched_client(session, playlist=lambda id: {"snapshot_id": snapshot_id})
     assert api.snapshot_id("") == snapshot_id
+
+
+def test_create_playlist_that_already_exists_raises_error(
+    session: db.Session, default_user_id: str
+) -> None:
+    playlist = Playlist.model_validate(
+        {
+            "id": "foo",
+            "name": "Foo",
+            "owner": {"id": "bar", "display_name": "Bar"},
+        }
+    )
+    api = get_patched_client(
+        session, user_playlists=Mock(return_value={"items": [playlist.model_dump()]})
+    )
+    with pytest.raises(PlaylistAlreadyExistsError) as e:
+        api.create_playlist(playlist.name)
+        err = e.errisinstance
+        assert isinstance(err, PlaylistAlreadyExistsError)
+        assert err.user_id == default_user_id
+        assert err.playlist_id == playlist.id
+        assert err.name == playlist.name
+
+
+@pytest.mark.usefixtures("default_user_id")
+def test_create_playlist_that_already_exists_returns_existing(
+    session: db.Session,
+) -> None:
+    playlist = Playlist.model_validate(
+        {
+            "id": "foo",
+            "name": "Foo",
+            "owner": {"id": "bar", "display_name": "Bar"},
+        }
+    )
+    api = get_patched_client(
+        session, user_playlists=Mock(return_value={"items": [playlist.model_dump()]})
+    )
+    received = api.create_playlist(playlist.name, skip_if_already_exists=True)
+    assert received == playlist
+
+
+@pytest.mark.usefixtures("default_user_id")
+def test_create_playlist_that_does_not_exist(
+    session: db.Session,
+) -> None:
+    playlist = Playlist.model_validate(
+        {
+            "id": "foo",
+            "name": "Foo",
+            "owner": {"id": "bar", "display_name": "Bar"},
+        }
+    )
+    create_playlist = Mock(return_value=playlist.model_dump())
+    api = get_patched_client(
+        session,
+        user_playlists=Mock(return_value={"items": []}),
+        user_playlist_create=create_playlist,
+    )
+    received = api.create_playlist(playlist.name)
+    assert received == playlist
+    create_playlist.assert_called_once()
