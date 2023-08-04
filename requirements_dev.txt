@@ -6,3 +6,5 @@ flake8~=6.1.0
 mypy~=1.4.0
 pytest~=7.4.0
 pytest-env~=0.8.0
+types-requests~=2.31.0
+types-tqdm~=4.65.0

@@ -1,3 +1,5 @@
+*.db
+*.db-journal
 *.egg-info
 *.log
 .coverage

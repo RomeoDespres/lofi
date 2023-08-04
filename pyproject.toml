@@ -7,5 +7,5 @@ files = ["alembic", "lofi", "tests"]
 strict = true
 
 [tool.pytest.ini_options]
-env = ["AWS_BUCKET_NAME=aws_bucket_name", "DB_NAME=db_name"]
+env = ["AWS_BUCKET_NAME=aws_bucket_name", "DB_NAME=db_name", "LOCAL_DB="]
 testpaths = ["tests"]
