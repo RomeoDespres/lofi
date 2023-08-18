@@ -5,6 +5,7 @@ from sqlalchemy import func, join, select
 from tqdm import tqdm
 
 from .. import db
+from .. import env
 from ..spotify_api import Album, SearchAlbum, SpotifyAPIClient, Track
 from .errors import LabelAlreadyExistsError
 from .log import LOGGER
@@ -129,6 +130,66 @@ def get_labels(session: db.Session) -> Sequence[db.Label]:
     return session.execute(select(db.Label).order_by(db.Label.name)).scalars().all()
 
 
+def get_new_lofi_tracklist(session: db.Session) -> list[str]:
+    one_week_ago = datetime.date.today() - datetime.timedelta(days=7)
+    track_subq = (
+        select(
+            db.Track.isrc,
+            db.Track.id,
+            db.Album.release_date,
+            func.row_number()
+            .over(  # type: ignore[no-untyped-call]
+                partition_by=db.Track.isrc, order_by=db.Album.release_date
+            )
+            .label("id_rank"),
+        )
+        .select_from(join(db.Track, db.Album))
+        .subquery()
+    )
+    track = (
+        select(track_subq.c.isrc, track_subq.c.id)
+        .where(track_subq.c.id_rank == 1, track_subq.c.release_date > one_week_ago)
+        .cte()
+    )
+    popularity_subq = (
+        select(
+            db.TrackPopularity.track_id,
+            db.TrackPopularity.popularity,
+            func.row_number()
+            .over(  # type: ignore[no-untyped-call]
+                partition_by=db.TrackPopularity.track_id,
+                order_by=db.TrackPopularity.date.desc(),
+            )
+            .label("date_rank"),
+        )
+        .where(
+            db.TrackPopularity.track_id.in_(
+                select(db.Track.id)
+                .where(db.Track.isrc.in_(select(track.c.isrc).scalar_subquery()))
+                .scalar_subquery()
+            )
+        )
+        .subquery()
+    )
+    popularity = (
+        select(
+            db.Track.isrc, func.max(popularity_subq.c.popularity).label("popularity")
+        )
+        .select_from(
+            join(db.Track, popularity_subq, db.Track.id == popularity_subq.c.track_id)
+        )
+        .where(popularity_subq.c.date_rank == 1)
+        .group_by(db.Track.isrc)
+        .subquery()
+    )
+    sql = (
+        select(track.c.id)
+        .select_from(join(track, popularity, track.c.isrc == popularity.c.isrc))
+        .order_by(popularity.c.popularity.desc())
+    )
+    return list(session.execute(sql).scalars())
+
+
 def get_snapshot(session: db.Session, snapshot_id: str) -> list[str]:
     sql = (
         select(db.Snapshot.track_id)
@@ -167,6 +228,7 @@ def run(session: db.Session) -> None:
         )
         update_playlist(session, label)
     collect_popularity(session)
+    update_new_lofi(session)
 
 
 def update_playlist(session: db.Session, label: db.Label) -> None:
@@ -175,6 +237,13 @@ def update_playlist(session: db.Session, label: db.Label) -> None:
     snapshot = get_snapshot(session, api.snapshot_id(label.playlist_id))
     api.set_playlist_tracks(label.playlist_id, expected_tracklist, snapshot or None)
     upload_snapshot(session, api.snapshot_id(label.playlist_id), expected_tracklist)
+
+
+def update_new_lofi(session: db.Session) -> None:
+    LOGGER.info("Updating new lofi")
+    api = SpotifyAPIClient(session)
+    tracklist = get_new_lofi_tracklist(session)
+    api.set_playlist_tracks(env.new_lofi_playlist_id(), tracklist)
 
 
 def upload_album_popularity(session: db.Session, album: Album) -> None:
