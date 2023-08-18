@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip setuptools wheel
-          pip install .
+          pip install -e .
 
       - name: Run ETL
         run: lofi etl
