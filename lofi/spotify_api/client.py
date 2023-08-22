@@ -173,11 +173,8 @@ class SpotifyAPIClient:
     def search_albums(self, q: str) -> list[SearchAlbum]:
         LOGGER.info(f"Searching for {q=}")
         items = self._get_items(
-            (s := self.api.search(q, type="album", limit=50, market="FR")),
-            950,
-            "albums",
+            self.api.search(q, type="album", limit=50, market="FR"), 950, "albums"
         )
-        print(s)
         return list(map(SearchAlbum.model_validate, items))
 
     @retry_on_timeout
