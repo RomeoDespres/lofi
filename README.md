@@ -19,7 +19,7 @@
 | lofi/log.py                                            |       13 |        0 |    100% |           |
 | lofi/spotify\_api/\_\_init\_\_.py                      |        3 |        0 |    100% |           |
 | lofi/spotify\_api/cache\_handler.py                    |       27 |        0 |    100% |           |
-| lofi/spotify\_api/client.py                            |      130 |       15 |     88% |125-135, 174-179, 205-212 |
+| lofi/spotify\_api/client.py                            |      130 |       15 |     88% |125-135, 174-181, 207-214 |
 | lofi/spotify\_api/errors.py                            |        5 |        0 |    100% |           |
 | lofi/spotify\_api/log.py                               |        2 |        0 |    100% |           |
 | lofi/spotify\_api/models.py                            |       47 |        1 |     98% |        66 |
