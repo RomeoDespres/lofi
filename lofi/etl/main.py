@@ -215,7 +215,8 @@ def search_missing_albums(api: SpotifyAPIClient, label: db.Label) -> list[Search
     min_year = get_label_max_albums_release_date(label)
     search_results: list[SearchAlbum] = []
     for year in range(min_year.year, datetime.date.today().year + 1):
-        search_results.extend(api.search_albums(f'label:"{label.name}" year:{year}'))
+        criteria = [f"year:{year}", *[f"label:{word}" for word in label.name.split()]]
+        search_results.extend(api.search_albums(" ".join(criteria)))
     return search_results
 
 

@@ -112,13 +112,13 @@ class SpotifyAPIClient:
             return response if subkey is None else response[subkey]
 
         response = get_subkey(response)
-        items: list[dict[str, Any]] = response["items"]
+        items: list[dict[str, Any] | None] = response["items"]
         while response.get("next") and (
             max_offset is None or response.get("offset", max_offset) < max_offset
         ):
             response = get_subkey(self.api.next(response))
             items.extend(response["items"])
-        return items
+        return [item for item in items if item is not None]
 
     @retry_on_timeout
     def albums(self, ids: Sequence[str], with_all_tracks: bool = False) -> list[Album]:
@@ -173,7 +173,7 @@ class SpotifyAPIClient:
     def search_albums(self, q: str) -> list[SearchAlbum]:
         LOGGER.info(f"Searching for {q=}")
         items = self._get_items(
-            self.api.search(q, type="album", limit=50, market="FR"), 950, "albums"
+            self.api.search(q, type="album", limit=50), 950, "albums"
         )
         return list(map(SearchAlbum.model_validate, items))
 
