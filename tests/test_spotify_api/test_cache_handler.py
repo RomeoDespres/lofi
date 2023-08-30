@@ -4,7 +4,7 @@ from lofi import db
 from lofi.spotify_api.cache_handler import CacheHandler
 from lofi.spotify_api.token import Token
 
-from ..conftest import load_data
+from ..utils import load_data
 
 
 @pytest.fixture
@@ -42,7 +42,7 @@ def test_get_user_returns_existing_user(
     session: db.Session, user_without_token: db.User
 ) -> None:
     cache_handler = CacheHandler(user_id=user_without_token.id, session=session)
-    assert cache_handler.get_user() is user_without_token
+    assert cache_handler.get_user().id == user_without_token.id
 
 
 def test_get_cached_token_returns_none(

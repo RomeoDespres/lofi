@@ -13,6 +13,14 @@ import lofi.db.connection
 import lofi.etl.log
 import lofi.spotify_api.log
 
+from .utils import (
+    AlbumGenerator,
+    LabelGenerator,
+    PlaylistGenerator,
+    TrackGenerator,
+    TrackPopularityGenerator,
+)
+
 
 class PatchedS3Client:
     """Patched S3 client for testing purposes.
@@ -53,18 +61,14 @@ class PatchedS3Client:
         self.files[bucket, key] = pathlib.Path(filename).read_bytes()
 
 
-def load_data(session: db.Session, *objs: db.Base) -> None:
-    """Load data models into database.
+@pytest.fixture
+def album_generator() -> AlbumGenerator:
+    return AlbumGenerator()
 
-    Parameters
-    ----------
-    session
-        Connected SQLAlchemy session.
-    *objs
-        SQLAlchemy objects to load.
-    """
-    session.add_all(objs)
-    session.flush()
+
+@pytest.fixture
+def label_generator() -> LabelGenerator:
+    return LabelGenerator()
 
 
 @pytest.fixture(autouse=True)
@@ -113,6 +117,11 @@ def patch_loggers(monkeypatch: pytest.MonkeyPatch) -> None:
     )
 
 
+@pytest.fixture
+def playlist_generator() -> PlaylistGenerator:
+    return PlaylistGenerator()
+
+
 def run_alembic_migrations(
     session: db.Session, type: Literal["upgrade", "downgrade"] = "upgrade"
 ) -> None:
@@ -145,3 +154,13 @@ def session(patch_get_s3_client: PatchedS3Client) -> Iterator[db.Session]:
         run_alembic_migrations(session, "upgrade")
         yield session
         session.rollback()
+
+
+@pytest.fixture
+def track_generator() -> TrackGenerator:
+    return TrackGenerator()
+
+
+@pytest.fixture
+def track_popularity_generator() -> TrackPopularityGenerator:
+    return TrackPopularityGenerator()

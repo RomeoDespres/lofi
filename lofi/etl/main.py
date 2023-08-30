@@ -18,7 +18,7 @@ class HasIdAndName(Protocol):
 
 class HasArtists(Protocol):
     @property
-    def artists(self) -> Iterable[HasIdAndName]:
+    def artists(self) -> Iterable[HasIdAndName]:  # pragma: no-cover
         ...
 
 
@@ -143,7 +143,8 @@ def get_new_lofi_tracklist(session: db.Session) -> list[str]:
             )
             .label("id_rank"),
         )
-        .select_from(join(db.Track, db.Album))
+        .select_from(join(db.Track, db.Album).join(db.Label))
+        .where(db.Label.is_lofi)
         .subquery()
     )
     track = (

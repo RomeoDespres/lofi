@@ -5,7 +5,7 @@ from typing import TypeVar
 from enum import StrEnum
 
 from humps import decamelize
-from sqlalchemy import ForeignKey, MetaData
+from sqlalchemy import ForeignKey, MetaData, literal
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -63,6 +63,11 @@ class RelArtistTrack(Base):
 class Label(Base):
     name: Mapped[str] = mapped_column(
         primary_key=True, comment="Name of the record label"
+    )
+    is_lofi: Mapped[bool] = mapped_column(
+        comment="Whether this label is a lofi label. "
+        "If False, will not be included in stats reports and new lofi playlist.",
+        server_default=literal(True),
     )
     playlist_id: Mapped[str] = mapped_column(
         ForeignKey("playlist.id"),

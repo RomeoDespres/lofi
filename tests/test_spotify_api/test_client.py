@@ -1,5 +1,5 @@
 import time
-from typing import Any, Sequence, Type
+from typing import Any, Sequence
 from unittest.mock import Mock, patch
 
 import pytest
@@ -73,7 +73,7 @@ def test_get_tracklist_diffs(
 @pytest.mark.usefixtures("default_user_id")
 @pytest.mark.parametrize("exc", [ConnectionError, ReadTimeout])
 def test_retry_on_timeout(
-    session: db.Session, exc: Type[ConnectionError | ReadTimeout]
+    session: db.Session, exc: type[ConnectionError | ReadTimeout]
 ) -> None:
     with patch.object(time, "sleep") as mock:
 
