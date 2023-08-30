@@ -10,6 +10,14 @@ def main() -> None:
 
 
 @main.command
+@click.option("--name", help="Label name")
+@lofi.db.with_connection
+def add_label(session: lofi.db.Session, name: str) -> None:
+    """Add label to database."""
+    lofi.etl.add_label(session, name)
+
+
+@main.command
 def etl() -> None:
     """Run main ETL."""
     lofi.etl.run()
