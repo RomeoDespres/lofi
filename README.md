@@ -7,15 +7,16 @@
 | alembic/env.py                                         |       18 |        0 |    100% |           |
 | alembic/versions/8adb8a331f45\_add\_snapshot\_table.py |       10 |        0 |    100% |           |
 | alembic/versions/34f171ff838a\_add\_tables.py          |       28 |        0 |    100% |           |
+| alembic/versions/5319ad355973\_add\_label\_is\_lofi.py |       10 |        0 |    100% |           |
 | lofi/\_\_init\_\_.py                                   |        4 |        0 |    100% |           |
 | lofi/db/\_\_init\_\_.py                                |        3 |        0 |    100% |           |
 | lofi/db/connection.py                                  |       98 |        0 |    100% |           |
-| lofi/db/models.py                                      |       72 |        0 |    100% |           |
+| lofi/db/models.py                                      |       73 |        0 |    100% |           |
 | lofi/env.py                                            |       14 |        1 |     93% |        23 |
 | lofi/etl/\_\_init\_\_.py                               |        2 |        0 |    100% |           |
 | lofi/etl/errors.py                                     |        3 |        1 |     67% |         3 |
 | lofi/etl/log.py                                        |        2 |        0 |    100% |           |
-| lofi/etl/main.py                                       |      155 |      112 |     28% |22, 26-34, 42-44, 48-51, 57-66, 70-73, 77-79, 83-86, 90-97, 101, 105-120, 124-126, 130, 134-190, 194-199, 203-210, 214-220, 225-232, 236-240, 244-247, 251-254, 258-271, 281-283, 287-290, 296-302, 306-309, 313-326, 336-338 |
+| lofi/etl/main.py                                       |      155 |      105 |     32% |22, 26-34, 42-44, 48-51, 57-66, 70-73, 77-79, 83-86, 90-97, 101, 105-120, 124-126, 130, 195-200, 204-211, 215-221, 226-233, 237-241, 245-248, 252-255, 259-272, 282-284, 288-291, 297-303, 307-310, 314-327, 337-339 |
 | lofi/log.py                                            |       13 |        0 |    100% |           |
 | lofi/spotify\_api/\_\_init\_\_.py                      |        3 |        0 |    100% |           |
 | lofi/spotify\_api/cache\_handler.py                    |       27 |        0 |    100% |           |
@@ -24,7 +25,7 @@
 | lofi/spotify\_api/log.py                               |        2 |        0 |    100% |           |
 | lofi/spotify\_api/models.py                            |       47 |        1 |     98% |        66 |
 | lofi/spotify\_api/token.py                             |        8 |        0 |    100% |           |
-|                                              **TOTAL** |  **643** |  **129** | **80%** |           |
+|                                              **TOTAL** |  **654** |  **122** | **81%** |           |
 
 
 ## Setup coverage badge
