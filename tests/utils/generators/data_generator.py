@@ -1,7 +1,7 @@
 import abc
 import datetime
 import random
-from typing import Any, Generic, Mapping, Sequence, TypeVar
+from typing import Any, Generic, Mapping, Sequence, TypeVar, cast, get_args, get_origin
 
 
 _D = TypeVar("_D", bound=Mapping[str, Any])
@@ -16,10 +16,12 @@ class DataGenerator(Generic[_D, _T], abc.ABC):
         self._id = 0
         self._random = random.Random(self.__class__.__name__)
 
-    @property
-    @abc.abstractmethod
-    def data_class(self) -> type[_T]:
-        raise NotImplementedError
+    @classmethod
+    def data_class(cls) -> type[_T]:
+        for base in cls.__orig_bases__:  # type: ignore[attr-defined]
+            if get_origin(base) is DataGenerator:
+                return cast(type[_T], get_args(base)[1])
+        raise TypeError(f"{cls} is not a subclass of DataGenerator.")
 
     @abc.abstractmethod
     def generate_default(self, id: int) -> _D:
@@ -27,7 +29,7 @@ class DataGenerator(Generic[_D, _T], abc.ABC):
 
     def generate(self, **kwargs: Any) -> _T:
         self._id += 1
-        return self.data_class(**{**self.generate_default(self._id), **kwargs})
+        return self.data_class()(**{**self.generate_default(self._id), **kwargs})
 
     def random_bool(self) -> bool:
         return bool(self._random.randint(0, 1))

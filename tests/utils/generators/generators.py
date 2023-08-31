@@ -11,10 +11,6 @@ from .typed_dicts import (
 
 
 class AlbumGenerator(DataGenerator[AlbumData, db.Album]):
-    @property
-    def data_class(self) -> type[db.Album]:
-        return db.Album
-
     def generate_default(self, id: int) -> AlbumData:
         return {
             "id": str(id),
@@ -26,12 +22,9 @@ class AlbumGenerator(DataGenerator[AlbumData, db.Album]):
 
 
 class LabelGenerator(DataGenerator[LabelData, db.Label]):
-    @property
-    def data_class(self) -> type[db.Label]:
-        return db.Label
-
     def generate_default(self, id: int) -> LabelData:
         return {
+            "is_indie": self.random_bool(),
             "is_lofi": self.random_bool(),
             "name": f"Name of label {id}",
             "playlist_id": f"Playlist ID of label {id}",
@@ -39,19 +32,11 @@ class LabelGenerator(DataGenerator[LabelData, db.Label]):
 
 
 class PlaylistGenerator(DataGenerator[PlaylistData, db.Playlist]):
-    @property
-    def data_class(self) -> type[db.Playlist]:
-        return db.Playlist
-
     def generate_default(self, id: int) -> PlaylistData:
         return {"id": str(id)}
 
 
 class TrackGenerator(DataGenerator[TrackData, db.Track]):
-    @property
-    def data_class(self) -> type[db.Track]:
-        return db.Track
-
     def generate_default(self, id: int) -> TrackData:
         return {
             "album_id": f"Album ID of track {id}",
@@ -63,10 +48,6 @@ class TrackGenerator(DataGenerator[TrackData, db.Track]):
 
 
 class TrackPopularityGenerator(DataGenerator[TrackPopularityData, db.TrackPopularity]):
-    @property
-    def data_class(self) -> type[db.TrackPopularity]:
-        return db.TrackPopularity
-
     def generate_default(self, id: int) -> TrackPopularityData:
         return {
             "date": self.random_date(),

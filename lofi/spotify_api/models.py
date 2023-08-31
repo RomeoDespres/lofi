@@ -78,3 +78,7 @@ class Album(SearchAlbum):
     label: str
     popularity: int
     tracks: Items[AlbumTrack]
+
+
+class ArtistAlbum(HasIdAndName):
+    pass

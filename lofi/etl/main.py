@@ -18,7 +18,7 @@ class HasIdAndName(Protocol):
 
 class HasArtists(Protocol):
     @property
-    def artists(self) -> Iterable[HasIdAndName]:  # pragma: no-cover
+    def artists(self) -> Iterable[HasIdAndName]:  # pragma: no cover
         ...
 
 
@@ -30,7 +30,7 @@ def add_label(session: db.Session, label_name: str) -> None:
         label_name, f"All {label_name} releases", skip_if_already_exists=True
     )
     db_playlist = session.merge(db.Playlist(id=playlist.id))
-    session.add(db.Label(name=label_name, playlist=db_playlist))
+    session.add(db.Label(name=label_name, is_indie=False, playlist=db_playlist))
     session.flush()
 
 

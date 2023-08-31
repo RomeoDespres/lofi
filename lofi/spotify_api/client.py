@@ -25,7 +25,15 @@ from .. import env
 from .cache_handler import CacheHandler
 from .errors import PlaylistAlreadyExistsError
 from .log import LOGGER
-from .models import Album, Playlist, PlaylistTrack, SearchAlbum, Track, User
+from .models import (
+    Album,
+    ArtistAlbum,
+    Playlist,
+    PlaylistTrack,
+    SearchAlbum,
+    Track,
+    User,
+)
 
 
 _T = TypeVar("_T")
@@ -133,6 +141,11 @@ class SpotifyAPIClient:
                 album["tracks"]["items"] = self._get_items(album["tracks"])
 
         return list(map(Album.model_validate, albums))
+
+    @retry_on_timeout
+    def artist_albums(self, artist_id: str) -> list[ArtistAlbum]:
+        items = self.api.artist_albums(artist_id, country="US", limit=50)
+        return list(map(ArtistAlbum.model_validate, self._get_items(items)))
 
     @retry_on_timeout
     def create_playlist(

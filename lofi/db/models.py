@@ -64,6 +64,9 @@ class Label(Base):
     name: Mapped[str] = mapped_column(
         primary_key=True, comment="Name of the record label"
     )
+    is_indie: Mapped[bool] = mapped_column(
+        comment="Whether this label is independent from tracked labels."
+    )
     is_lofi: Mapped[bool] = mapped_column(
         comment="Whether this label is a lofi label. "
         "If False, will not be included in stats reports and new lofi playlist.",

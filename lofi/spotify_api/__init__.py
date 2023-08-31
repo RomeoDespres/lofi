@@ -1,5 +1,5 @@
 from .client import SpotifyAPIClient
-from .models import Album, SearchAlbum, Track
+from .models import Album, Playlist, SearchAlbum, Track
 
 
-__all__ = ["Album", "SearchAlbum", "SpotifyAPIClient", "Track"]
+__all__ = ["Album", "Playlist", "SearchAlbum", "SpotifyAPIClient", "Track"]

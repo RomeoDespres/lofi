@@ -13,6 +13,7 @@ class AlbumData(TypedDict):
 
 
 class LabelData(TypedDict):
+    is_indie: bool
     is_lofi: bool
     name: str
     playlist_id: str

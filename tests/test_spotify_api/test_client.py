@@ -14,7 +14,7 @@ from lofi.spotify_api.client import (
     retry_on_timeout,
 )
 from lofi.spotify_api.errors import PlaylistAlreadyExistsError
-from lofi.spotify_api.models import Playlist, User
+from lofi.spotify_api.models import ArtistAlbum, Playlist, User
 
 
 @pytest.fixture
@@ -221,3 +221,14 @@ def test_create_playlist_that_does_not_exist(
     received = api.create_playlist(playlist.name)
     assert received == playlist
     create_playlist.assert_called_once()
+
+
+@pytest.mark.usefixtures("default_user_id")
+def test_get_artist_albums(session: db.Session) -> None:
+    artist_id = "foo"
+    albums = [{"id": "foo", "name": "Foo"}, {"id": "bar", "name": "Bar"}]
+    api = get_patched_client(
+        session, artist_albums=Mock(return_value={"items": albums})
+    )
+    received = api.artist_albums(artist_id)
+    assert received == list(map(ArtistAlbum.model_validate, albums))
