@@ -34,6 +34,7 @@ from .models import (
     Track,
     User,
 )
+from .tracklist_utils import get_tracklist_reorders
 
 
 _T = TypeVar("_T")
@@ -54,7 +55,8 @@ def get_first_differing_index(l1: Iterable[Any], l2: Iterable[Any]) -> int | Non
 
 def get_tracklist_diffs(
     l1: Sequence[_T], l2: Sequence[_T]
-) -> tuple[Sequence[_T], Sequence[_T]]:
+) -> tuple[list[_T], list[_T]]:
+    l1, l2 = list(l1), list(l2)
     i = get_first_differing_index(reversed(l1), reversed(l2))
     if i is not None:
         if i == 0:
@@ -192,20 +194,42 @@ class SpotifyAPIClient:
 
     @retry_on_timeout
     def set_playlist_tracks(
-        self, id: str, ids: Sequence[str], current_ids: Sequence[str] | None = None
+        self,
+        id: str,
+        ids: Sequence[str],
+        current_ids: Sequence[str] | None = None,
+        use_reorders: bool = False,
     ) -> None:
         LOGGER.info(f"Updating tracklist of Spotify playlist {id}")
         if current_ids is None:
             current_ids = [track.id for track in self.playlist_tracks(id)]
         else:
             LOGGER.info("Current snapshot already in database")
-        ids_to_add, ids_to_remove = get_tracklist_diffs(ids, current_ids)
+            current_ids = list(current_ids)
+        if ids == current_ids:
+            LOGGER.info("Playlist already has required tracklist")
+            return
+        current_ids_set = set(current_ids)
+        ids_to_remove_set = current_ids_set - set(ids)
+        if use_reorders:
+            ids_to_add = [id for id in ids if id not in current_ids_set]
+            ids_to_remove = list(ids_to_remove_set)
+        else:
+            ids_to_add, ids_to_remove = get_tracklist_diffs(ids, current_ids)
         LOGGER.info(f"Removing {len(ids_to_remove):,} tracks")
         for ids_chunk in chunk(ids_to_remove, 100):
             self.api.playlist_remove_all_occurrences_of_items(id, ids_chunk)
         LOGGER.info(f"Adding {len(ids_to_add):,} tracks")
         for i, ids_chunk in enumerate(chunk(ids_to_add, 100)):
             self.api.playlist_add_items(id, ids_chunk, position=i * 100)
+        if use_reorders:
+            current_ids = ids_to_add + [
+                id for id in current_ids if id not in ids_to_remove_set
+            ]
+            for reorder in get_tracklist_reorders(ids, current_ids):
+                self.api.playlist_reorder_items(
+                    id, reorder.range_start, reorder.insert_before, reorder.range_length
+                )
 
     @retry_on_timeout
     def snapshot_id(self, playlist_id: str) -> str:

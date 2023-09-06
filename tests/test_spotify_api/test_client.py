@@ -1,3 +1,4 @@
+import datetime
 import time
 from typing import Any, Sequence
 from unittest.mock import Mock, patch
@@ -226,7 +227,11 @@ def test_create_playlist_that_does_not_exist(
 @pytest.mark.usefixtures("default_user_id")
 def test_get_artist_albums(session: db.Session) -> None:
     artist_id = "foo"
-    albums = [{"id": "foo", "name": "Foo"}, {"id": "bar", "name": "Bar"}]
+    props = {"release_date": datetime.date.today(), "total_tracks": 10}
+    albums = [
+        {"id": "foo", "name": "Foo", **props},
+        {"id": "bar", "name": "Bar", **props},
+    ]
     api = get_patched_client(
         session, artist_albums=Mock(return_value={"items": albums})
     )

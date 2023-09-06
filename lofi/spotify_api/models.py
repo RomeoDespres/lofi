@@ -81,4 +81,10 @@ class Album(SearchAlbum):
 
 
 class ArtistAlbum(HasIdAndName):
-    pass
+    release_date: datetime.date
+    total_tracks: int
+
+    @field_validator("release_date", mode="before")
+    @classmethod
+    def parse_release_date(cls, d: str) -> datetime.date:
+        return parse_date(d)

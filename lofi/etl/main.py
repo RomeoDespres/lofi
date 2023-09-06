@@ -1,7 +1,7 @@
 import datetime
 from typing import Iterable, Protocol, Sequence
 
-from sqlalchemy import func, join, select
+from sqlalchemy import func, join, select, union
 from tqdm import tqdm
 
 from .. import db
@@ -49,6 +49,34 @@ def collect_albums_popularity(api: SpotifyAPIClient, session: db.Session) -> Non
     LOGGER.info(f"Collecting popularity for {len(ids):,} albums")
     albums = api.albums(ids)
     upload_albums_popularity(session, albums)
+
+
+# def collect_artist_albums(
+#     session: db.Session, artist_id: str, excluded_album_ids: set[str]
+# ) -> None:
+#     albums = api.albums(album_ids, with_all_tracks=True)
+#     tracks = collect_tracks(api, albums)
+#     upload_objects_artists(session, tracks)
+#     upload_objects_artists(session, albums)
+#     upload_albums(session, albums)
+#     upload_tracks(session, tracks)
+#     excluded_album_ids |= set(album_ids)
+
+
+def collect_indie_albums(
+    session: db.Session, labels: Sequence[db.Label], excluded_album_ids: set[str]
+) -> None:
+    LOGGER.info("Collecting indie albums")
+    api = SpotifyAPIClient(session)
+    artist_ids = get_label_artist_ids(session, labels)
+    LOGGER.info("Collecting indie album IDs")
+    album_ids = {
+        album.id
+        for artist_id in tqdm(artist_ids)
+        for album in api.artist_albums(artist_id)
+        if album.id not in excluded_album_ids
+    }
+    print(f"Collected {len(album_ids):,} album IDs")
 
 
 def collect_label_albums(
@@ -120,6 +148,26 @@ def get_expected_tracklist(session: db.Session, label_name: str) -> Sequence[str
     return session.execute(sql).scalars().all()
 
 
+def get_label_artist_ids(session: db.Session, labels: Sequence[db.Label]) -> list[str]:
+    label_names = [label.name for label in labels]
+    album_id_scalar_subquery = select(
+        select(db.Album.id).where(db.Album.label_name.in_(label_names)).cte().c.id
+    ).scalar_subquery()
+    sql = union(
+        select(db.RelArtistAlbum.artist_id).where(
+            db.RelArtistAlbum.album_id.in_(album_id_scalar_subquery)
+        ),
+        select(db.RelArtistTrack.artist_id).where(
+            db.RelArtistTrack.track_id.in_(
+                select(db.Track.id)
+                .where(db.Track.album_id.in_(album_id_scalar_subquery))
+                .scalar_subquery()
+            )
+        ),
+    )
+    return list(session.execute(sql).scalars())
+
+
 def get_label_max_albums_release_date(label: db.Label) -> datetime.date:
     if not label.albums:
         return datetime.date(2015, 1, 1)
@@ -127,7 +175,8 @@ def get_label_max_albums_release_date(label: db.Label) -> datetime.date:
 
 
 def get_labels(session: db.Session) -> Sequence[db.Label]:
-    return session.execute(select(db.Label).order_by(db.Label.name)).scalars().all()
+    sql = select(db.Label).order_by(db.Label.name).where(~db.Label.is_indie)
+    return session.execute(sql).scalars().all()
 
 
 def get_new_lofi_tracklist(session: db.Session) -> list[str]:
@@ -229,6 +278,7 @@ def run(session: db.Session) -> None:
             session, label, excluded_album_ids=get_all_album_ids(session)
         )
         update_playlist(session, label)
+    collect_indie_albums(session, labels, excluded_album_ids=get_all_album_ids(session))
     collect_popularity(session)
     update_new_lofi(session)
 
@@ -245,7 +295,7 @@ def update_new_lofi(session: db.Session) -> None:
     LOGGER.info("Updating new lofi")
     api = SpotifyAPIClient(session)
     tracklist = get_new_lofi_tracklist(session)
-    api.set_playlist_tracks(env.new_lofi_playlist_id(), tracklist)
+    api.set_playlist_tracks(env.new_lofi_playlist_id(), tracklist, use_reorders=True)
 
 
 def upload_album_popularity(session: db.Session, album: Album) -> None:
@@ -258,6 +308,15 @@ def upload_album_popularity(session: db.Session, album: Album) -> None:
 def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
     LOGGER.info(f"Uploading {len(albums):,} albums")
     for album in tqdm(albums):
+        if session.get(db.Label, album.label) is None:
+            session.merge(
+                db.Label(
+                    name=album.label,
+                    is_lofi=True,
+                    is_indie=True,
+                    playlist=session.merge(db.Playlist(id="")),
+                )
+            )
         session.merge(
             db.Album(
                 id=album.id,
