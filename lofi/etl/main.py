@@ -278,7 +278,9 @@ def run(session: db.Session) -> None:
             session, label, excluded_album_ids=get_all_album_ids(session)
         )
         update_playlist(session, label)
-    collect_indie_albums(session, labels, excluded_album_ids=get_all_album_ids(session))
+    # collect_indie_albums(
+    #     session, labels, excluded_album_ids=get_all_album_ids(session)
+    # )
     collect_popularity(session)
     update_new_lofi(session)
 
