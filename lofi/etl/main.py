@@ -134,9 +134,7 @@ def get_expected_tracklist(session: db.Session, label_name: str) -> Sequence[str
         select(
             db.Track.id,
             func.row_number()
-            .over(  
-                partition_by=db.Track.isrc, order_by=db.Album.release_date
-            )
+            .over(partition_by=db.Track.isrc, order_by=db.Album.release_date)
             .label("track_rank"),
         )
         .select_from(join(db.Track, db.Album))
@@ -187,9 +185,7 @@ def get_new_lofi_tracklist(session: db.Session) -> list[str]:
             db.Track.id,
             db.Album.release_date,
             func.row_number()
-            .over(  
-                partition_by=db.Track.isrc, order_by=db.Album.release_date
-            )
+            .over(partition_by=db.Track.isrc, order_by=db.Album.release_date)
             .label("id_rank"),
         )
         .select_from(join(db.Track, db.Album).join(db.Label))
@@ -206,7 +202,7 @@ def get_new_lofi_tracklist(session: db.Session) -> list[str]:
             db.TrackPopularity.track_id,
             db.TrackPopularity.popularity,
             func.row_number()
-            .over(  
+            .over(
                 partition_by=db.TrackPopularity.track_id,
                 order_by=db.TrackPopularity.date.desc(),
             )

@@ -4,6 +4,11 @@ on:
   push:
     branches: ["main"]
 
+  workflow_run:
+    workflows: ["Run ETL"]
+    types:
+      - completed
+
   workflow_dispatch:
 
 permissions:
@@ -21,19 +26,54 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DB_NAME: lofi.db
+      NEW_LOFI_PLAYLIST_ID: 4FDJIsW0avzmwWxpX67c4h
+      SPOTIPY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIPY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      SPOTIPY_REDIRECT_URI: http://localhost:8080
+      SPOTIFY_USER_ID: 1175574971
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build static files
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
         run: |
-          mkdir static
-          echo "<h1>my page</h1><p>welcome to my page :)</p>" > static/index.html
+          pip install --upgrade pip setuptools wheel
+          pip install -e .
+          cd frontend
+          npm i
+
+      - name: Generate API data
+        run: lofi frontend generate-data
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "static"
+          path: "frontend/build"
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

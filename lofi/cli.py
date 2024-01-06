@@ -1,3 +1,4 @@
+import pathlib
 import click
 
 import lofi
@@ -39,3 +40,27 @@ def download() -> None:
 def upload() -> None:
     """Download database to local file."""
     lofi.db.upload_local_db()
+
+
+@main.group
+def frontend() -> None:
+    """Frontend commands."""
+    pass
+
+
+@frontend.command
+@click.argument("frontend-dir", type=click.Path(exists=True), default="frontend")
+def generate_api_client(frontend_dir: str) -> None:
+    """Generate TypeScript API client."""
+    import lofi.api
+
+    lofi.api.generate_typescript_client(pathlib.Path(frontend_dir))
+
+
+@frontend.command
+@click.argument("frontend-dir", type=click.Path(exists=True), default="frontend")
+def generate_data(frontend_dir: str) -> None:
+    """Generate data files in public folder."""
+    import lofi.api
+
+    lofi.api.generate_data(pathlib.Path(frontend_dir))

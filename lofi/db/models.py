@@ -5,7 +5,7 @@ from typing import TypeVar
 from enum import StrEnum
 
 from humps import decamelize
-from sqlalchemy import ForeignKey, MetaData, literal
+from sqlalchemy import BigInteger, ForeignKey, MetaData, literal
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -167,6 +167,14 @@ class TrackPopularity(Base):
 
 class Playlist(Base):
     id: Mapped[str] = mapped_column(primary_key=True, comment="Spotify playlist ID")
+
+
+class PopularityStreams(Base):
+    date: Mapped[datetime.date] = mapped_column(primary_key=True)
+    popularity: Mapped[int] = mapped_column(primary_key=True)
+    streams_q1: Mapped[int] = mapped_column(BigInteger)
+    streams_q2: Mapped[int] = mapped_column(BigInteger)
+    streams_q3: Mapped[int] = mapped_column(BigInteger)
 
 
 class Snapshot(Base):
