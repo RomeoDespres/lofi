@@ -2,6 +2,7 @@
 *.db-journal
 *.egg-info
 *.log
+.DS_Store
 .coverage
 .env
 .mypy_cache

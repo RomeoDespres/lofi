@@ -14,7 +14,7 @@ track_subq = (
         db.Album.release_date,
         db.Album.label_name.label("label"),
         func.row_number()
-        .over(  # type: ignore[no-untyped-call]
+        .over(  
             partition_by=db.Track.isrc, order_by=db.Album.release_date
         )
         .label("id_rank"),
@@ -33,7 +33,7 @@ popularity_subq = (
         db.TrackPopularity.track_id,
         db.TrackPopularity.popularity,
         func.row_number()
-        .over(  # type: ignore[no-untyped-call]
+        .over(  
             partition_by=db.TrackPopularity.track_id,
             order_by=db.TrackPopularity.date.desc(),
         )
