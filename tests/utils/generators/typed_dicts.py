@@ -17,6 +17,7 @@ class LabelData(TypedDict):
     is_lofi: bool
     name: str
     playlist_id: str
+    playlist_image_url: str | None
 
 
 class PlaylistData(TypedDict):

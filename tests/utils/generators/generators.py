@@ -28,6 +28,9 @@ class LabelGenerator(DataGenerator[LabelData, db.Label]):
             "is_lofi": self.random_bool(),
             "name": f"Name of label {id}",
             "playlist_id": f"Playlist ID of label {id}",
+            "playlist_image_url": None
+            if self.random_bool()
+            else f"Image URL for label {id}",
         }
 
 

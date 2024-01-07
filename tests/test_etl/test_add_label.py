@@ -36,11 +36,13 @@ def patch_spotify_api_client(
         return Playlist.model_validate(
             {
                 "id": (playlist_id := playlist_generator.generate().id),
+                "images": [],
                 "name": name,
                 "owner": {
                     "id": f"Owner ID of playlist {playlist_id}",
                     "display_name": f"Owner name of playlist {playlist_id}",
                 },
+                "snapshot_id": "",
             }
         )
 

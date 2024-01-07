@@ -6,6 +6,7 @@
 import type { StreamsRange } from "./StreamsRange";
 
 export type Label = {
+  imageUrl: string;
   name: string;
   popularity: number;
   playlistId: string;

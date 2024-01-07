@@ -1,5 +1,4 @@
 import Box from "@mui/joy/Box";
-import Typography from "@mui/joy/Typography";
 
 export interface PopularityBarProps {
   height: number;
@@ -12,7 +11,7 @@ const PopularityBar = ({ height, max = 100, value, width }: PopularityBarProps) 
   const commonBoxProps = { borderRadius: 3, height };
   return (
     <Box alignItems="center" display="flex" gap={1}>
-      <Typography>{value}</Typography>
+      <div>{value}</div>
       <Box
         bgcolor={(theme) => theme.palette.primary[900]}
         width={width}

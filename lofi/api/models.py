@@ -17,6 +17,7 @@ class StreamsRange(BaseModel):
 
 
 class Label(BaseModel):
+    image_url: str
     name: str
     popularity: float
     playlist_id: str

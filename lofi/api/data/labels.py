@@ -27,8 +27,8 @@ def add_quarter_popularities(df: pd.DataFrame) -> pd.DataFrame:
     return df.sort_values("popularity")
 
 
-def get_label_playlist_sql() -> Select[tuple[str, str]]:
-    return select(db.Label.name, db.Label.playlist_id).order_by(db.Label.name)
+def get_label_playlist_sql() -> Select[tuple[str, str, str]]:
+    return select(db.Label.name, db.Label.playlist_id, db.Label.playlist_image_url)
 
 
 def get_popularity_to_streams_sql() -> Select[tuple[int, int, int]]:
@@ -125,6 +125,7 @@ def get_labels(session: db.Session) -> models.Labels:
 
     labels = [
         models.Label(
+            image_url=row["playlist_image_url"],
             name=row["label"],
             popularity=row["50%"],
             playlist_id=row["playlist_id"],

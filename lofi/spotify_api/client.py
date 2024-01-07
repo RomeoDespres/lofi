@@ -178,6 +178,10 @@ class SpotifyAPIClient:
         return User.model_validate(self.api.me())
 
     @retry_on_timeout
+    def playlist(self, id: str) -> Playlist:
+        return Playlist.model_validate(self.api.playlist(id))
+
+    @retry_on_timeout
     def playlist_tracks(self, id: str) -> list[PlaylistTrack]:
         LOGGER.info(f"Fetching tracks of Spotify playlist {id}")
         items = self._get_items(self.api.playlist_items(id, limit=100))
@@ -230,11 +234,6 @@ class SpotifyAPIClient:
                 self.api.playlist_reorder_items(
                     id, reorder.range_start, reorder.insert_before, reorder.range_length
                 )
-
-    @retry_on_timeout
-    def snapshot_id(self, playlist_id: str) -> str:
-        """Return current snapshot ID of a playlist."""
-        return str(self.api.playlist(playlist_id)["snapshot_id"])
 
     @retry_on_timeout
     def tracks(self, ids: Sequence[str]) -> list[Track]:

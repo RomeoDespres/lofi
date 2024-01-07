@@ -6,7 +6,14 @@ from tqdm import tqdm
 
 from .. import db
 from .. import env
-from ..spotify_api import Album, SearchAlbum, SpotifyAPIClient, Track
+from ..spotify_api import (
+    Album,
+    ImageUrl,
+    Playlist,
+    SearchAlbum,
+    SpotifyAPIClient,
+    Track,
+)
 from .errors import LabelAlreadyExistsError
 from .log import LOGGER
 
@@ -256,6 +263,13 @@ def get_track_ids_with_outdated_popularity(session: db.Session) -> Sequence[str]
     return session.execute(sql).scalars().all()
 
 
+def get_user_playlists(session: db.Session) -> dict[str, Playlist]:
+    """Return an ID -> playlist mapping of all user's playlists."""
+    api = SpotifyAPIClient(session)
+    playlists = api.user_playlists(api.user_id)
+    return {playlist.id: playlist for playlist in playlists}
+
+
 def search_missing_albums(api: SpotifyAPIClient, label: db.Label) -> list[SearchAlbum]:
     LOGGER.info("Searching missing albums")
     min_year = get_label_max_albums_release_date(label)
@@ -268,25 +282,42 @@ def search_missing_albums(api: SpotifyAPIClient, label: db.Label) -> list[Search
 
 @db.with_connection
 def run(session: db.Session) -> None:
+    playlists = get_user_playlists(session)
     for i, label in enumerate(labels := get_labels(session)):
         LOGGER.info(f"{i + 1}/{len(labels)} Collecting data for {label.name}")
         collect_label_albums(
             session, label, excluded_album_ids=get_all_album_ids(session)
         )
-        update_playlist(session, label)
-    # collect_indie_albums(
-    #     session, labels, excluded_album_ids=get_all_album_ids(session)
-    # )
+        update_playlist(session, label, playlists[label.playlist_id])
     collect_popularity(session)
     update_new_lofi(session)
+    update_playlist_images(session, labels, playlists)
 
 
-def update_playlist(session: db.Session, label: db.Label) -> None:
+def update_playlist(session: db.Session, label: db.Label, playlist: Playlist) -> None:
     api = SpotifyAPIClient(session)
     expected_tracklist = get_expected_tracklist(session, label.name)
-    snapshot = get_snapshot(session, api.snapshot_id(label.playlist_id))
+    snapshot = get_snapshot(session, playlist.snapshot_id)
     api.set_playlist_tracks(label.playlist_id, expected_tracklist, snapshot or None)
-    upload_snapshot(session, api.snapshot_id(label.playlist_id), expected_tracklist)
+    new_snapshot_id = api.playlist(label.playlist_id).snapshot_id
+    upload_snapshot(session, new_snapshot_id, expected_tracklist)
+
+
+def update_playlist_images(
+    session: db.Session, labels: Sequence[db.Label], playlists: dict[str, Playlist]
+) -> None:
+    def get_image_width(image: ImageUrl) -> int:
+        return 0 if image.width is None else image.width
+
+    def get_image_url(playlist: Playlist) -> str | None:
+        if not playlist.images:
+            return None
+        return min(playlist.images, key=get_image_width).url
+
+    for label in labels:
+        label.playlist_image_url = get_image_url(playlists[label.playlist_id])
+
+    session.flush()
 
 
 def update_new_lofi(session: db.Session) -> None:

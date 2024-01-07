@@ -1,4 +1,7 @@
-import "@fontsource/inter";
+import "@fontsource/inter/300.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
 import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
 import React from "react";

@@ -27,8 +27,16 @@ class PlaylistTrack(BaseModel):
     id: str
 
 
+class ImageUrl(BaseModel):
+    height: int | None
+    url: str
+    width: int | None
+
+
 class Playlist(HasIdAndName):
+    images: list[ImageUrl]
     owner: User
+    snapshot_id: str
 
 
 class TrackAlbum(HasIdAndName):

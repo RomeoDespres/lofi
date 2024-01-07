@@ -18,6 +18,18 @@ from lofi.spotify_api.errors import PlaylistAlreadyExistsError
 from lofi.spotify_api.models import ArtistAlbum, Playlist, User
 
 
+DEFAULT_PATCHED_PLAYLIST = {
+    "id": "",
+    "images": [],
+    "name": "",
+    "owner": {
+        "id": "",
+        "display_name": "",
+    },
+    "snapshot_id": "",
+}
+
+
 @pytest.fixture
 def default_user_id(monkeypatch: pytest.MonkeyPatch) -> str:
     monkeypatch.setenv("SPOTIFY_USER_ID", user_id := "foo")
@@ -158,20 +170,15 @@ def test_set_playlist_tracks(
 @pytest.mark.usefixtures("default_user_id")
 def test_snapshot_id(session: db.Session) -> None:
     snapshot_id = "foo"
-    api = get_patched_client(session, playlist=lambda id: {"snapshot_id": snapshot_id})
-    assert api.snapshot_id("") == snapshot_id
+    patched_playlist = {**DEFAULT_PATCHED_PLAYLIST, "snapshot_id": snapshot_id}
+    api = get_patched_client(session, playlist=lambda id: patched_playlist)
+    assert api.playlist("").snapshot_id == snapshot_id
 
 
 def test_create_playlist_that_already_exists_raises_error(
     session: db.Session, default_user_id: str
 ) -> None:
-    playlist = Playlist.model_validate(
-        {
-            "id": "foo",
-            "name": "Foo",
-            "owner": {"id": "bar", "display_name": "Bar"},
-        }
-    )
+    playlist = Playlist.model_validate(DEFAULT_PATCHED_PLAYLIST)
     api = get_patched_client(
         session, user_playlists=Mock(return_value={"items": [playlist.model_dump()]})
     )
@@ -188,13 +195,7 @@ def test_create_playlist_that_already_exists_raises_error(
 def test_create_playlist_that_already_exists_returns_existing(
     session: db.Session,
 ) -> None:
-    playlist = Playlist.model_validate(
-        {
-            "id": "foo",
-            "name": "Foo",
-            "owner": {"id": "bar", "display_name": "Bar"},
-        }
-    )
+    playlist = Playlist.model_validate(DEFAULT_PATCHED_PLAYLIST)
     api = get_patched_client(
         session, user_playlists=Mock(return_value={"items": [playlist.model_dump()]})
     )
@@ -206,13 +207,7 @@ def test_create_playlist_that_already_exists_returns_existing(
 def test_create_playlist_that_does_not_exist(
     session: db.Session,
 ) -> None:
-    playlist = Playlist.model_validate(
-        {
-            "id": "foo",
-            "name": "Foo",
-            "owner": {"id": "bar", "display_name": "Bar"},
-        }
-    )
+    playlist = Playlist.model_validate(DEFAULT_PATCHED_PLAYLIST)
     create_playlist = Mock(return_value=playlist.model_dump())
     api = get_patched_client(
         session,

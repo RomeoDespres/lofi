@@ -76,6 +76,9 @@ class Label(Base):
         ForeignKey("playlist.id"),
         comment="Spotify ID of the playlist containing label releases.",
     )
+    playlist_image_url: Mapped[str | None] = mapped_column(
+        comment="Cover image URL of the playlist containing label releases.",
+    )
 
     albums: Mapped[list[Album]] = relationship(back_populates="label")
     playlist: Mapped[Playlist] = relationship()
