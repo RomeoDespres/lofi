@@ -33,9 +33,6 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
           pl: 2,
           textAlign: "center",
         },
-        // "& td:nth-child(6)": {
-        //   textAlign: "center",
-        // },
         "& td:nth-child(2)": {
           fontWeight: theme.fontWeight.md,
         },

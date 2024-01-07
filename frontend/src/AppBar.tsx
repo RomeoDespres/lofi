@@ -1,14 +1,13 @@
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import Box from "@mui/joy/Box";
-import IconButton from "@mui/joy/IconButton";
 import Typography from "@mui/joy/Typography";
-import useScrollTrigger from "@mui/material/useScrollTrigger";
+import SearchBar from "./SearchBar";
 export interface AppBarProps {
+  onChangeSearchQuery: (query: string) => void;
+  searchQuery: string | undefined;
   title: string;
 }
 
-const AppBar = ({ title }: AppBarProps) => {
-  const scrollTrigger = useScrollTrigger({ disableHysteresis: true });
+const AppBar = ({ onChangeSearchQuery, searchQuery, title }: AppBarProps) => {
   return (
     <>
       <Box
@@ -32,10 +31,8 @@ const AppBar = ({ title }: AppBarProps) => {
         <Typography color="primary" level="h1">
           {title}
         </Typography>
-        <Box sx={{ opacity: scrollTrigger ? 1 : 0, transition: "opacity 0.3s" }}>
-          <IconButton onClick={() => window.scrollTo(0, 0)}>
-            <ArrowUpwardIcon />
-          </IconButton>
+        <Box display="flex" gap={2}>
+          <SearchBar onChange={onChangeSearchQuery} value={searchQuery} />
         </Box>
       </Box>
       <Box height={64} mb={2} pt={2} width="100%"></Box>
