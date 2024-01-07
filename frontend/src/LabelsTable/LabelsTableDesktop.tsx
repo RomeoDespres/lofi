@@ -89,7 +89,7 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
         {labels === undefined
           ? null
           : labels.labels.map((label, index) => (
-              <tr>
+              <tr className="lofi-label-row" id={label.name}>
                 <td width="1px">{index + 1}</td>
                 <td>
                   <Box

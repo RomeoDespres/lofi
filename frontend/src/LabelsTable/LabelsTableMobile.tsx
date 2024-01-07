@@ -19,7 +19,7 @@ const LabelsTableMobile = ({ labels }: LabelsTableImplementationProps) => {
       {labels === undefined
         ? null
         : labels.labels.map((label) => (
-            <Grid xs={12}>
+            <Grid className="lofi-label-row" id={label.name} xs={12}>
               <Sheet sx={{ borderRadius: 4, p: 1 }}>
                 <MobileLabelRow label={label} />
               </Sheet>

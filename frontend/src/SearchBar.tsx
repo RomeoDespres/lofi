@@ -1,16 +1,26 @@
 import Input from "@mui/joy/Input";
+import textMatchesQuery from "./LabelsTable/textMatchesQuery";
+import useIsMobile from "./useIsMobile";
 
-export interface SearchBarProps {
-  onChange: (value: string) => void;
-  value: string | undefined;
-}
+const SearchBar = () => {
+  const isMobile = useIsMobile();
 
-const SearchBar = ({ onChange, value }: SearchBarProps) => (
-  <Input
-    placeholder="Search"
-    onChange={(event) => onChange(event.target.value)}
-    value={value}
-  />
-);
+  const handleChange = (value: string) => {
+    const defaultDisplay = isMobile ? "flex" : "table-row";
+    for (const node of document.getElementsByClassName("lofi-label-row")) {
+      (node as any).style.display = textMatchesQuery(node.id, value)
+        ? defaultDisplay
+        : "none";
+    }
+  };
+
+  return (
+    <Input
+      placeholder="Search"
+      onChange={(event) => handleChange(event.target.value)}
+      sx={{ display: "flex", flexGrow: 1 }}
+    />
+  );
+};
 
 export default SearchBar;

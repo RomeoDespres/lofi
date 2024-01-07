@@ -1,25 +1,27 @@
 import Box from "@mui/joy/Box";
+import Grid from "@mui/joy/Grid";
 import Typography from "@mui/joy/Typography";
 import ContactButton from "./ContactButton";
 import SearchBar from "./SearchBar";
 export interface AppBarProps {
-  onChangeSearchQuery: (query: string) => void;
-  searchQuery: string | undefined;
   title: string;
 }
 
-const AppBar = ({ onChangeSearchQuery, searchQuery, title }: AppBarProps) => {
+const AppBar = ({ title }: AppBarProps) => {
   return (
     <>
-      <Box
+      <Grid
         alignItems="center"
         bgcolor={(theme) => theme.palette.background.level1}
+        container
         display="flex"
-        height={80}
+        height={{ md: 80, xs: 144 }}
         justifyContent="space-between"
         left={0}
         p={2}
+        pb={{ md: 2, xs: 1 }}
         position="fixed"
+        spacing={1}
         sx={{
           backdropFilter: "blur(10px)",
           borderBottomColor: (theme) => theme.palette.divider,
@@ -29,15 +31,19 @@ const AppBar = ({ onChangeSearchQuery, searchQuery, title }: AppBarProps) => {
         width="100%"
         zIndex={100}
       >
-        <Typography color="primary" level="h1">
-          {title}
-        </Typography>
-        <Box display="flex" gap={2}>
-          <SearchBar onChange={onChangeSearchQuery} value={searchQuery} />
-          <ContactButton />
-        </Box>
-      </Box>
-      <Box height={64} mb={2} pt={2} width="100%"></Box>
+        <Grid md={9} xs={12}>
+          <Typography color="primary" level="h1">
+            {title}
+          </Typography>
+        </Grid>
+        <Grid md={3} xs={12}>
+          <Box display="flex" gap={2}>
+            <SearchBar />
+            <ContactButton />
+          </Box>
+        </Grid>
+      </Grid>
+      <Box height={{ md: 80 - 16, xs: 144 - 16 }} mb={2} pt={2} width="100%"></Box>
     </>
   );
 };
