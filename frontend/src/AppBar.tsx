@@ -1,5 +1,6 @@
 import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
+import ContactButton from "./ContactButton";
 import SearchBar from "./SearchBar";
 export interface AppBarProps {
   onChangeSearchQuery: (query: string) => void;
@@ -33,6 +34,7 @@ const AppBar = ({ onChangeSearchQuery, searchQuery, title }: AppBarProps) => {
         </Typography>
         <Box display="flex" gap={2}>
           <SearchBar onChange={onChangeSearchQuery} value={searchQuery} />
+          <ContactButton />
         </Box>
       </Box>
       <Box height={64} mb={2} pt={2} width="100%"></Box>
