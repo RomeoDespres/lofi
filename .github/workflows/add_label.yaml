@@ -1,0 +1,42 @@
+name: Add label
+
+on:
+  workflow_dispatch:
+    inputs:
+      label_name:
+        decription: Label name
+        required: true
+        type: string
+
+jobs:
+  add-label:
+    name: Add label
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DB_NAME: lofi.db
+      NEW_LOFI_PLAYLIST_ID: 4FDJIsW0avzmwWxpX67c4h
+      SPOTIPY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+      SPOTIPY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+      SPOTIPY_REDIRECT_URI: http://localhost:8080
+      SPOTIFY_USER_ID: 1175574971
+
+    steps:
+      - name: Checkout repository contents
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -e .
+
+      - name: Add label
+        run: lofi add-label --name="${{ inputs.label_name }}"
