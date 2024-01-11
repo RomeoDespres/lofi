@@ -11,5 +11,6 @@ export type Label = {
   popularity: number;
   playlistId: string;
   tracks: number;
+  tracksInEditorials: number;
   streams: StreamsRange;
 };

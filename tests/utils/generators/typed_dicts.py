@@ -17,11 +17,12 @@ class LabelData(TypedDict):
     is_lofi: bool
     name: str
     playlist_id: str
-    playlist_image_url: str | None
 
 
 class PlaylistData(TypedDict):
     id: str
+    image_url: str | None
+    is_editorial: bool
 
 
 class TrackData(TypedDict):

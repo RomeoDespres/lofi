@@ -27,8 +27,10 @@ def add_quarter_popularities(df: pd.DataFrame) -> pd.DataFrame:
     return df.sort_values("popularity")
 
 
-def get_label_playlist_sql() -> Select[tuple[str, str, str]]:
-    return select(db.Label.name, db.Label.playlist_id, db.Label.playlist_image_url)
+def get_label_playlist_sql() -> Select[tuple[str, str, str | None]]:
+    return select(
+        db.Label.name, db.Label.playlist_id, db.Playlist.image_url
+    ).select_from(join(db.Label, db.Playlist))
 
 
 def get_popularity_to_streams_sql() -> Select[tuple[int, int, int]]:
@@ -97,8 +99,28 @@ def get_track_popularity_sql() -> Select[tuple[str, int]]:
         .group_by(db.Track.isrc)
         .subquery()
     )
-    sql = select(track.c.label, popularity.c.popularity).select_from(
-        join(track, popularity, track.c.isrc == popularity.c.isrc)
+
+    editorials = (
+        select(db.Track.isrc)
+        .distinct()
+        .select_from(join(db.Snapshot, db.Track, db.Snapshot.track_id == db.Track.id))
+        .where(
+            db.Track.isrc.in_(select(track.c.isrc).scalar_subquery()),
+            db.Snapshot.playlist_id.in_(
+                select(db.Playlist.id).where(db.Playlist.is_editorial).scalar_subquery()
+            ),
+        )
+        .subquery()
+    )
+
+    sql = select(
+        track.c.label,
+        popularity.c.popularity,
+        editorials.c.isrc.is_not(None).label("in_editorial"),
+    ).select_from(
+        join(track, popularity, track.c.isrc == popularity.c.isrc).join(
+            editorials, track.c.isrc == editorials.c.isrc, isouter=True
+        )
     )
     return sql
 
@@ -118,6 +140,7 @@ def get_labels(session: db.Session) -> models.Labels:
         .describe()
         .sort_values("50%", ascending=False)
         .reset_index()
+        .join(tracks.groupby("label")["in_editorial"].sum(), on="label")
         .join(playlists, on="label")
         .join(streams[["streams_q1"]], on="25%")
         .join(streams[["streams_q3"]], on="75%")
@@ -125,11 +148,12 @@ def get_labels(session: db.Session) -> models.Labels:
 
     labels = [
         models.Label(
-            image_url=row["playlist_image_url"],
+            image_url=row["image_url"],
             name=row["label"],
             popularity=row["50%"],
             playlist_id=row["playlist_id"],
             tracks=row["count"],
+            tracks_in_editorials=row["in_editorial"],
             streams=models.StreamsRange(
                 min=int(row["streams_q1"]), max=int(row["streams_q3"])
             ),

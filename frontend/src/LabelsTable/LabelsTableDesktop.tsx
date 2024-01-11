@@ -25,8 +25,8 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
           verticalAlign: "middle",
           width: "2.5rem",
         },
-        "& thead th:last-child": { borderTopRightRadius: 8, pr: 2 },
-        "& thead th:nth-child(6)": { width: "8%" },
+        "& thead th:nth-child(2)": { textAlign: "left" },
+        "& thead th:last-child": { borderTopRightRadius: 8, pr: 2, width: "8%" },
         "& td:nth-child(1)": {
           color: theme.palette.text.icon,
           fontSize: theme.typography["body-sm"].fontSize,
@@ -48,12 +48,25 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
     >
       <thead>
         <tr>
-          <th>#</th>
-          <th>Label</th>
+          <th>
+            <LabelsTableHeaderWithInfoIcon header="#" justify="center" />
+          </th>
+          <th>
+            <LabelsTableHeaderWithInfoIcon header="Label" justify="flex-start" />
+          </th>
           <th>
             <LabelsTableHeaderWithInfoIcon
               header="Tracks"
               info="Number of tracks released in the past 6 months"
+            />
+          </th>
+          <th>
+            <LabelsTableHeaderWithInfoIcon
+              header="In editorials"
+              info={
+                "Number of tracks released in the past 6 months " +
+                "that have been featured in at least one Spotify editorial playlist"
+              }
             />
           </th>
           <th>
@@ -82,7 +95,9 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
               }
             />
           </th>
-          <th>Listen</th>
+          <th>
+            <LabelsTableHeaderWithInfoIcon header="Listen" />
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -103,6 +118,28 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
                   </Box>
                 </td>
                 <td>{label.tracks}</td>
+                <td>
+                  <Box display="inline">
+                    {label.tracksInEditorials === 0 ? "-" : label.tracksInEditorials}
+                  </Box>
+                  {label.tracksInEditorials === 0 ? null : (
+                    <Box
+                      display="inline"
+                      fontSize={(theme) => theme.typography["body-sm"].fontSize}
+                      pl={1}
+                    >
+                      (
+                      {(label.tracksInEditorials / label.tracks).toLocaleString(
+                        undefined,
+                        {
+                          style: "percent",
+                          minimumFractionDigits: 1,
+                        }
+                      )}
+                      )
+                    </Box>
+                  )}
+                </td>
                 <td>{getStreamsRangeText(label.streams)}</td>
                 <td>
                   <Box display="flex" justifyContent="flex-end">

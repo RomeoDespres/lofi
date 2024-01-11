@@ -35,12 +35,13 @@ interface MobileLabelRowProps {
 
 const MobileLabelRow = ({ label }: MobileLabelRowProps) => {
   return (
-    <Grid alignItems="center" container spacing={2} xs={12}>
+    <Grid alignItems="start" container spacing={2} xs={12}>
       <Grid
         alignItems="center"
         display="flex"
+        flexDirection="column"
         sx={{
-          "& img": {
+          "& img.label-image": {
             borderRadius: 4,
             height: "100%",
             objectFit: "contain",
@@ -49,7 +50,23 @@ const MobileLabelRow = ({ label }: MobileLabelRowProps) => {
         }}
         xs={3}
       >
-        <img alt={`${label.name}`} src={label.imageUrl} />
+        <img alt={`${label.name}`} className="label-image" src={label.imageUrl} />
+        <Box display="flex" width="100%">
+          <Button
+            component="a"
+            href={getSpotifyPlaylistUrl(label.playlistId)}
+            size="sm"
+            startDecorator={<OpenInNew />}
+            sx={{
+              fontSize: (theme) => theme.fontSize.xs,
+              p: 0,
+              pt: 1,
+            }}
+            variant="plain"
+          >
+            Spotify
+          </Button>
+        </Box>
       </Grid>
       <Grid
         container
@@ -65,26 +82,7 @@ const MobileLabelRow = ({ label }: MobileLabelRowProps) => {
           })}
           xs={12}
         >
-          <Box alignItems="center" display="flex" justifyContent="space-between">
-            {label.name}
-            <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
-              <Button
-                component="a"
-                href={getSpotifyPlaylistUrl(label.playlistId)}
-                size="sm"
-                startDecorator={<OpenInNew />}
-                sx={{
-                  fontSize: (theme) => theme.fontSize.xs,
-                  mb: -4,
-                  mt: -4,
-                  p: 0,
-                }}
-                variant="plain"
-              >
-                Spotify
-              </Button>
-            </Box>
-          </Box>
+          {label.name}
         </Grid>
         <Grid xs={12}>
           <MobileLabelMetric
@@ -116,6 +114,41 @@ const MobileLabelRow = ({ label }: MobileLabelRowProps) => {
               </>
             }
             right={label.tracks}
+          />
+        </Grid>
+        <Grid xs={12}>
+          <MobileLabelMetric
+            left={
+              <LabelsTableHeaderWithInfoIcon
+                header="In editorials"
+                info={
+                  "Number of tracks released in the past 6 months " +
+                  "that have been featured in at least one Spotify editorial playlist"
+                }
+              />
+            }
+            right={
+              <>
+                <Box display="inline">{label.tracksInEditorials}</Box>
+                {label.tracksInEditorials === 0 ? null : (
+                  <Box
+                    display="inline"
+                    fontSize={(theme) => theme.typography["body-xs"].fontSize}
+                    pl={1}
+                  >
+                    (
+                    {(label.tracksInEditorials / label.tracks).toLocaleString(
+                      undefined,
+                      {
+                        style: "percent",
+                        minimumFractionDigits: 1,
+                      }
+                    )}
+                    )
+                  </Box>
+                )}
+              </>
+            }
           />
         </Grid>
         <Grid xs={12}>

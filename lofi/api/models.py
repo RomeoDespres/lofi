@@ -22,6 +22,7 @@ class Label(BaseModel):
     popularity: float
     playlist_id: str
     tracks: int
+    tracks_in_editorials: int
     streams: StreamsRange
 
 

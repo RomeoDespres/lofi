@@ -1,6 +1,7 @@
 import datetime
 from typing import Iterable, Protocol, Sequence
 
+from spotipy import SpotifyException  # type: ignore
 from sqlalchemy import func, join, select, union
 from tqdm import tqdm
 
@@ -36,7 +37,7 @@ def add_label(session: db.Session, label_name: str) -> None:
     playlist = SpotifyAPIClient(session).create_playlist(
         label_name, f"All {label_name} releases", skip_if_already_exists=True
     )
-    db_playlist = session.merge(db.Playlist(id=playlist.id))
+    db_playlist = session.merge(db.Playlist(id=playlist.id, is_editorial=False))
     session.add(db.Label(name=label_name, is_indie=False, playlist=db_playlist))
     session.flush()
 
@@ -134,6 +135,11 @@ def get_album_ids_with_outdated_popularity(session: db.Session) -> Sequence[str]
 
 def get_all_album_ids(session: db.Session) -> set[str]:
     return set(session.execute(select(db.Album.id)).scalars())
+
+
+def get_editorial_playlists(session: db.Session) -> Sequence[db.Playlist]:
+    sql = select(db.Playlist).where(db.Playlist.is_editorial)
+    return session.execute(sql).scalars().all()
 
 
 def get_expected_tracklist(session: db.Session, label_name: str) -> Sequence[str]:
@@ -291,7 +297,30 @@ def run(session: db.Session) -> None:
         update_playlist(session, label, playlists[label.playlist_id])
     collect_popularity(session)
     update_new_lofi(session)
-    update_playlist_images(session, labels, playlists)
+    update_playlist_images(session, playlists.values())
+    update_editorial_playlists(session)
+
+
+def snapshot_is_in_db(session: db.Session, snapshot_id: str) -> bool:
+    sql = select(db.Snapshot.id).where(db.Snapshot.id == snapshot_id).limit(1)
+    return session.execute(sql).scalar_one_or_none() is not None
+
+
+def update_editorial_playlists(session: db.Session) -> None:
+    LOGGER.info("Updating editorial playlists")
+    api = SpotifyAPIClient(session)
+    for playlist in tqdm(get_editorial_playlists(session)):
+        try:
+            spotify_playlist = api.playlist(playlist.id)
+        except SpotifyException as e:
+            if e.http_status == 404:
+                # This playlist does not exist anymore!
+                continue
+            raise
+        if snapshot_is_in_db(session, spotify_playlist.snapshot_id):
+            continue
+        track_ids = [t.id for t in api.playlist_tracks(playlist.id)]
+        upload_snapshot(session, playlist.id, spotify_playlist.snapshot_id, track_ids)
 
 
 def update_playlist(session: db.Session, label: db.Label, playlist: Playlist) -> None:
@@ -300,12 +329,10 @@ def update_playlist(session: db.Session, label: db.Label, playlist: Playlist) ->
     snapshot = get_snapshot(session, playlist.snapshot_id)
     api.set_playlist_tracks(label.playlist_id, expected_tracklist, snapshot or None)
     new_snapshot_id = api.playlist(label.playlist_id).snapshot_id
-    upload_snapshot(session, new_snapshot_id, expected_tracklist)
+    upload_snapshot(session, playlist.id, new_snapshot_id, expected_tracklist)
 
 
-def update_playlist_images(
-    session: db.Session, labels: Sequence[db.Label], playlists: dict[str, Playlist]
-) -> None:
+def update_playlist_images(session: db.Session, playlists: Iterable[Playlist]) -> None:
     def get_image_width(image: ImageUrl) -> int:
         return 0 if image.width is None else image.width
 
@@ -314,8 +341,11 @@ def update_playlist_images(
             return None
         return min(playlist.images, key=get_image_width).url
 
-    for label in labels:
-        label.playlist_image_url = get_image_url(playlists[label.playlist_id])
+    for playlist in playlists:
+        db_playlist = session.get(db.Playlist, playlist.id)
+        if db_playlist is None:
+            continue
+        db_playlist.image_url = get_image_url(playlist)
 
     session.flush()
 
@@ -380,15 +410,23 @@ def upload_objects_artists(session: db.Session, objs: Iterable[HasArtists]) -> N
 
 
 def upload_snapshot(
-    session: db.Session, snapshot_id: str, track_ids: Iterable[str]
+    session: db.Session, playlist_id: str, snapshot_id: str, track_ids: Iterable[str]
 ) -> None:
     LOGGER.info("Uploading playlist snapshot")
-    sql = select(db.Snapshot.id).where(db.Snapshot.id == snapshot_id).limit(1)
-    if session.execute(sql).scalar_one_or_none() is not None:
+    if snapshot_is_in_db(session, snapshot_id):
         LOGGER.info("Snapshot already in database, skipping")
         return
+    timestamp = datetime.datetime.utcnow()
     for position, track_id in enumerate(tqdm(track_ids)):
-        session.merge(db.Snapshot(id=snapshot_id, position=position, track_id=track_id))
+        session.merge(
+            db.Snapshot(
+                id=snapshot_id,
+                position=position,
+                playlist_id=playlist_id,
+                timestamp=timestamp,
+                track_id=track_id,
+            )
+        )
 
 
 def upload_track_popularity(session: db.Session, track: Track) -> None:

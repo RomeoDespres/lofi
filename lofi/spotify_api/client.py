@@ -185,7 +185,7 @@ class SpotifyAPIClient:
     def playlist_tracks(self, id: str) -> list[PlaylistTrack]:
         LOGGER.info(f"Fetching tracks of Spotify playlist {id}")
         items = self._get_items(self.api.playlist_items(id, limit=100))
-        raw_tracks = [item["track"] for item in items]
+        raw_tracks = [item["track"] for item in items if item["track"] is not None]
         return list(map(PlaylistTrack.model_validate, raw_tracks))
 
     @retry_on_timeout

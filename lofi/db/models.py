@@ -76,9 +76,6 @@ class Label(Base):
         ForeignKey("playlist.id"),
         comment="Spotify ID of the playlist containing label releases.",
     )
-    playlist_image_url: Mapped[str | None] = mapped_column(
-        comment="Cover image URL of the playlist containing label releases.",
-    )
 
     albums: Mapped[list[Album]] = relationship(back_populates="label")
     playlist: Mapped[Playlist] = relationship()
@@ -163,13 +160,21 @@ class TrackPopularity(Base):
     date: Mapped[datetime.date] = mapped_column(
         primary_key=True, comment="Date at which popularity was collected"
     )
-    popularity: Mapped[int] = mapped_column("Spotify popularity")
+    popularity: Mapped[int] = mapped_column(comment="Spotify popularity")
 
     track: Mapped[Track] = relationship(back_populates="popularity")
 
 
 class Playlist(Base):
     id: Mapped[str] = mapped_column(primary_key=True, comment="Spotify playlist ID")
+    image_url: Mapped[str | None] = mapped_column(
+        comment="Cover image URL of the playlist",
+    )
+    is_editorial: Mapped[bool] = mapped_column(
+        comment="Whether playlist is a Spotify editorial playlist"
+    )
+
+    snapshots: Mapped[list[Snapshot]] = relationship(back_populates="playlist")
 
 
 class PopularityStreams(Base):
@@ -187,7 +192,18 @@ class Snapshot(Base):
     position: Mapped[int] = mapped_column(
         primary_key=True, comment="Track position within playlist"
     )
-    track_id: Mapped[str] = mapped_column(comment="Spotify track ID")
+    playlist_id: Mapped[str | None] = mapped_column(
+        ForeignKey(Playlist.id),
+        comment="Id of this snapshot's playlist. "
+        "NULL for historical values where it wasn't recorded",
+    )
+    timestamp: Mapped[datetime.datetime | None] = mapped_column(
+        comment="Timestamp at which snapshot was captured. "
+        "NULL for historical values where it wasn't recorded"
+    )
+    track_id: Mapped[str] = mapped_column(comment="Spotify track ID", index=True)
+
+    playlist: Mapped[Playlist | None] = relationship(back_populates="snapshots")
 
 
 class User(Base):

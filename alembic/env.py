@@ -24,7 +24,9 @@ def run_migrations_online() -> None:
         cm = nullcontext(session)
     with cm as session:
         context.configure(
-            connection=session.connection(), target_metadata=target_metadata
+            connection=session.connection(),
+            render_as_batch=True,
+            target_metadata=target_metadata,
         )
         with context.begin_transaction():
             context.run_migrations()
