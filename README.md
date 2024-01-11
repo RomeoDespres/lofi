@@ -6,20 +6,22 @@
 |---------------------------------------------------------------------------- | -------: | -------: | ------: | --------: |
 | alembic/env.py                                                              |       18 |        0 |    100% |           |
 | alembic/versions/2b80c7ddb34b\_add\_label\_is\_indie.py                     |       15 |        0 |    100% |           |
+| alembic/versions/4b7adbd648dc\_add\_snapshot\_playlist\_relationship.py     |       14 |        0 |    100% |           |
 | alembic/versions/7a960d8298ac\_add\_label\_playlist\_image.py               |       10 |        0 |    100% |           |
 | alembic/versions/8adb8a331f45\_add\_snapshot\_table.py                      |       10 |        0 |    100% |           |
 | alembic/versions/34f171ff838a\_add\_tables.py                               |       28 |        0 |    100% |           |
 | alembic/versions/5319ad355973\_add\_label\_is\_lofi.py                      |       10 |        0 |    100% |           |
+| alembic/versions/73619481350c\_add\_editorial\_playlists.py                 |       36 |        0 |    100% |           |
 | alembic/versions/fcba2a965e33\_add\_popularity\_to\_streams\_reference\_.py |       10 |        0 |    100% |           |
 | lofi/\_\_init\_\_.py                                                        |        4 |        0 |    100% |           |
 | lofi/db/\_\_init\_\_.py                                                     |        3 |        0 |    100% |           |
 | lofi/db/connection.py                                                       |       98 |        0 |    100% |           |
-| lofi/db/models.py                                                           |       81 |        0 |    100% |           |
+| lofi/db/models.py                                                           |       86 |        0 |    100% |           |
 | lofi/env.py                                                                 |       14 |        1 |     93% |        23 |
 | lofi/etl/\_\_init\_\_.py                                                    |        2 |        0 |    100% |           |
 | lofi/etl/errors.py                                                          |        3 |        0 |    100% |           |
 | lofi/etl/log.py                                                             |        2 |        0 |    100% |           |
-| lofi/etl/main.py                                                            |      185 |      125 |     32% |49-51, 55-58, 76-86, 92-101, 105-108, 112-114, 118-121, 125-132, 136, 140-153, 157-173, 177-179, 183-184, 247-252, 256-263, 268-270, 274-280, 285-294, 298-303, 309-320, 324-327, 331-334, 338-360, 370-372, 376-379, 385-391, 395-398, 402-415, 425-427 |
+| lofi/etl/main.py                                                            |      210 |      146 |     30% |50-52, 56-59, 77-87, 93-102, 106-109, 113-115, 119-122, 126-133, 137, 141-142, 146-159, 163-179, 183-185, 189-190, 253-258, 262-269, 274-276, 280-286, 291-301, 305-306, 310-323, 327-332, 336-350, 354-357, 361-364, 368-390, 400-402, 406-409, 415-421, 433-436, 440-453, 463-465 |
 | lofi/log.py                                                                 |       13 |        0 |    100% |           |
 | lofi/spotify\_api/\_\_init\_\_.py                                           |        3 |        0 |    100% |           |
 | lofi/spotify\_api/cache\_handler.py                                         |       27 |        0 |    100% |           |
@@ -29,7 +31,7 @@
 | lofi/spotify\_api/models.py                                                 |       60 |        1 |     98% |        74 |
 | lofi/spotify\_api/token.py                                                  |        8 |        0 |    100% |           |
 | lofi/spotify\_api/tracklist\_utils.py                                       |       59 |        0 |    100% |           |
-|                                                                   **TOTAL** |  **818** |  **148** | **82%** |           |
+|                                                                   **TOTAL** |  **898** |  **169** | **81%** |           |
 
 
 ## Setup coverage badge

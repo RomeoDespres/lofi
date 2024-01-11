@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="d_f6cefe9066c00e10_errors_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-10 17:27 +0000
+            created at 2024-01-11 13:25 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -267,7 +267,7 @@
     <p class="run"><span class="n"><a id="t185" href="#t185">185</a></span><span class="t">    <span class="key">def</span> <span class="nam">playlist_tracks</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">id</span><span class="op">:</span> <span class="nam">str</span><span class="op">)</span> <span class="op">-></span> <span class="nam">list</span><span class="op">[</span><span class="nam">PlaylistTrack</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t186" href="#t186">186</a></span><span class="t">        <span class="nam">LOGGER</span><span class="op">.</span><span class="nam">info</span><span class="op">(</span><span class="str">f"Fetching tracks of Spotify playlist {id}"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t187" href="#t187">187</a></span><span class="t">        <span class="nam">items</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_get_items</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">api</span><span class="op">.</span><span class="nam">playlist_items</span><span class="op">(</span><span class="nam">id</span><span class="op">,</span> <span class="nam">limit</span><span class="op">=</span><span class="num">100</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t188" href="#t188">188</a></span><span class="t">        <span class="nam">raw_tracks</span> <span class="op">=</span> <span class="op">[</span><span class="nam">item</span><span class="op">[</span><span class="str">"track"</span><span class="op">]</span> <span class="key">for</span> <span class="nam">item</span> <span class="key">in</span> <span class="nam">items</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t188" href="#t188">188</a></span><span class="t">        <span class="nam">raw_tracks</span> <span class="op">=</span> <span class="op">[</span><span class="nam">item</span><span class="op">[</span><span class="str">"track"</span><span class="op">]</span> <span class="key">for</span> <span class="nam">item</span> <span class="key">in</span> <span class="nam">items</span> <span class="key">if</span> <span class="nam">item</span><span class="op">[</span><span class="str">"track"</span><span class="op">]</span> <span class="key">is</span> <span class="key">not</span> <span class="key">None</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t189" href="#t189">189</a></span><span class="t">        <span class="key">return</span> <span class="nam">list</span><span class="op">(</span><span class="nam">map</span><span class="op">(</span><span class="nam">PlaylistTrack</span><span class="op">.</span><span class="nam">model_validate</span><span class="op">,</span> <span class="nam">raw_tracks</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t190" href="#t190">190</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t191" href="#t191">191</a></span><span class="t">    <span class="op">@</span><span class="nam">retry_on_timeout</span>&nbsp;</span><span class="r"></span></p>
@@ -342,7 +342,7 @@
             <a id="nextFileLink" class="nav" href="d_f6cefe9066c00e10_errors_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-10 17:27 +0000
+            created at 2024-01-11 13:25 +0000
         </p>
     </div>
 </footer>
