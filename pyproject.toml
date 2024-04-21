@@ -1,3 +1,6 @@
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+
 [tool.coverage.run]
 omit = ["tests/*"]
 relative_files = true
