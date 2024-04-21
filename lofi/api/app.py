@@ -1,14 +1,18 @@
+from __future__ import annotations
+
 import json
 import pathlib
 import subprocess
 import tempfile
-from typing import Any, Iterator
+from typing import TYPE_CHECKING, Any, Iterator
 
 from fastapi import FastAPI
-from fastapi.routing import APIRoute
 from pydantic import BaseModel
 
 from . import models
+
+if TYPE_CHECKING:
+    from fastapi.routing import APIRoute
 
 
 class Route(BaseModel):
@@ -18,7 +22,7 @@ class Route(BaseModel):
 
 
 def add_route_to_app(app: FastAPI, route: Route) -> None:
-    def generate_unique_id(r: APIRoute) -> str:
+    def generate_unique_id(r: APIRoute) -> str:  # noqa: ARG001
         return route.name
 
     def fake_route() -> None:
@@ -52,17 +56,13 @@ def generate_typescript_client(frontend_dir: pathlib.Path) -> None:
         f.write(json.dumps(openapi))
 
     subprocess.run(
-        [
-            "npx",
-            "openapi-typescript-codegen",
-            "--input",
-            f.name,
-            "--output",
-            "src/api",
-        ],
+        ["npx", "openapi-typescript-codegen", "--input", f.name, "--output", "src/api"],  # noqa: S603, S607
         cwd=frontend_dir,
+        check=False,
     )
     subprocess.run(
-        ["npx", "prettier", "src", "--write", "--log-level", "silent"], cwd=frontend_dir
+        ["npx", "prettier", "src", "--write", "--log-level", "silent"],  # noqa: S603, S607
+        cwd=frontend_dir,
+        check=False,
     )
     pathlib.Path(f.name).unlink()

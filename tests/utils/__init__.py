@@ -8,7 +8,6 @@ from .generators import (
 )
 from .misc import iterator_to_list
 
-
 __all__ = [
     "AlbumGenerator",
     "LabelGenerator",

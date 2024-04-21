@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import spotipy  # type: ignore
+import spotipy  # type: ignore[import]
 
-from .. import db
+from lofi import db
+
 from .token import Token
 
 
-class CacheHandler(spotipy.cache_handler.CacheHandler):  # type: ignore
+class CacheHandler(spotipy.cache_handler.CacheHandler):  # type: ignore[misc]
     """Cache and retrieve Spotify API tokens in database."""
 
     def __init__(self, user_id: str, session: db.Session) -> None:
@@ -32,7 +33,8 @@ class CacheHandler(spotipy.cache_handler.CacheHandler):  # type: ignore
         return user
 
     def save_token_to_cache(
-        self: CacheHandler, token_info: dict[str, str | int]
+        self: CacheHandler,
+        token_info: dict[str, str | int],
     ) -> None:
         """Save token to database."""
         if self.save_token_to_db:

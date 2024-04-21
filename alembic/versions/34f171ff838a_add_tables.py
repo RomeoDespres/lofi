@@ -1,13 +1,13 @@
-"""add tables
+"""add tables.
 
 Revision ID: 34f171ff838a
 Revises:
 Create Date: 2023-08-03 12:14:31.693243
 
 """
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "34f171ff838a"
@@ -37,7 +37,7 @@ def upgrade() -> None:
     op.create_table(
         "label",
         sa.Column(
-            "name", sa.String(), nullable=False, comment="Name of the record label"
+            "name", sa.String(), nullable=False, comment="Name of the record label",
         ),
         sa.Column(
             "playlist_id",
@@ -46,7 +46,7 @@ def upgrade() -> None:
             comment="Spotify ID of the playlist containing label releases.",
         ),
         sa.ForeignKeyConstraint(
-            ["playlist_id"], ["playlist.id"], name=op.f("fk_label_playlist_id_playlist")
+            ["playlist_id"], ["playlist.id"], name=op.f("fk_label_playlist_id_playlist"),
         ),
         sa.PrimaryKeyConstraint("name", name=op.f("pk_label")),
     )
@@ -73,7 +73,7 @@ def upgrade() -> None:
             comment="Type of the album ('album', 'compilation', or 'single')",
         ),
         sa.ForeignKeyConstraint(
-            ["label_name"], ["label.name"], name=op.f("fk_album_label_name_label")
+            ["label_name"], ["label.name"], name=op.f("fk_album_label_name_label"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_album")),
     )
@@ -88,7 +88,7 @@ def upgrade() -> None:
         ),
         sa.Column("Spotify popularity", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["album_id"], ["album.id"], name=op.f("fk_album_popularity_album_id_album")
+            ["album_id"], ["album.id"], name=op.f("fk_album_popularity_album_id_album"),
         ),
         sa.PrimaryKeyConstraint("album_id", "date", name=op.f("pk_album_popularity")),
     )
@@ -96,7 +96,7 @@ def upgrade() -> None:
         "rel_artist_album",
         sa.Column("album_id", sa.String(), nullable=False, comment="Spotify album ID"),
         sa.Column(
-            "artist_id", sa.String(), nullable=False, comment="Spotify artist ID"
+            "artist_id", sa.String(), nullable=False, comment="Spotify artist ID",
         ),
         sa.Column(
             "artist_position",
@@ -105,7 +105,7 @@ def upgrade() -> None:
             comment="Position of the artist in the list of all artists of the album",
         ),
         sa.ForeignKeyConstraint(
-            ["album_id"], ["album.id"], name=op.f("fk_rel_artist_album_album_id_album")
+            ["album_id"], ["album.id"], name=op.f("fk_rel_artist_album_album_id_album"),
         ),
         sa.ForeignKeyConstraint(
             ["artist_id"],
@@ -113,7 +113,7 @@ def upgrade() -> None:
             name=op.f("fk_rel_artist_album_artist_id_artist"),
         ),
         sa.PrimaryKeyConstraint(
-            "album_id", "artist_id", "artist_position", name=op.f("pk_rel_artist_album")
+            "album_id", "artist_id", "artist_position", name=op.f("pk_rel_artist_album"),
         ),
     )
     op.create_table(
@@ -134,7 +134,7 @@ def upgrade() -> None:
             comment="Position of the track within its album",
         ),
         sa.ForeignKeyConstraint(
-            ["album_id"], ["album.id"], name=op.f("fk_track_album_id_album")
+            ["album_id"], ["album.id"], name=op.f("fk_track_album_id_album"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_track")),
     )
@@ -142,7 +142,7 @@ def upgrade() -> None:
         "rel_artist_track",
         sa.Column("track_id", sa.String(), nullable=False, comment="Spotify track ID"),
         sa.Column(
-            "artist_id", sa.String(), nullable=False, comment="Spotify artist ID"
+            "artist_id", sa.String(), nullable=False, comment="Spotify artist ID",
         ),
         sa.Column(
             "artist_position",
@@ -156,10 +156,10 @@ def upgrade() -> None:
             name=op.f("fk_rel_artist_track_artist_id_artist"),
         ),
         sa.ForeignKeyConstraint(
-            ["track_id"], ["track.id"], name=op.f("fk_rel_artist_track_track_id_track")
+            ["track_id"], ["track.id"], name=op.f("fk_rel_artist_track_track_id_track"),
         ),
         sa.PrimaryKeyConstraint(
-            "track_id", "artist_id", "artist_position", name=op.f("pk_rel_artist_track")
+            "track_id", "artist_id", "artist_position", name=op.f("pk_rel_artist_track"),
         ),
     )
     op.create_table(
@@ -173,7 +173,7 @@ def upgrade() -> None:
         ),
         sa.Column("Spotify popularity", sa.Integer(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["track_id"], ["track.id"], name=op.f("fk_track_popularity_track_id_track")
+            ["track_id"], ["track.id"], name=op.f("fk_track_popularity_track_id_track"),
         ),
         sa.PrimaryKeyConstraint("track_id", "date", name=op.f("pk_track_popularity")),
     )

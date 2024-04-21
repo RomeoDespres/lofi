@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import functools
 from typing import Callable, Iterator, ParamSpec, TypeVar
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -26,6 +27,7 @@ def iterator_to_list(func: Callable[_P, Iterator[_T]]) -> Callable[_P, list[_T]]
     ...
     >>> f()
     [0, 1, 2]
+
     """
 
     @functools.wraps(func)

@@ -15,13 +15,13 @@ from typing import (
     cast,
 )
 
+import spotipy  # type: ignore[import]
 from requests import ConnectionError, ReadTimeout
-import spotipy  # type: ignore
-from spotipy.oauth2 import SpotifyOAuth  # type: ignore
+from spotipy.oauth2 import SpotifyOAuth  # type: ignore[import]
 from tqdm import tqdm
 
-from .. import db
-from .. import env
+from lofi import db, env
+
 from .cache_handler import CacheHandler
 from .errors import PlaylistAlreadyExistsError
 from .log import LOGGER
@@ -35,7 +35,6 @@ from .models import (
     User,
 )
 from .tracklist_utils import get_tracklist_reorders
-
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -54,7 +53,8 @@ def get_first_differing_index(l1: Iterable[Any], l2: Iterable[Any]) -> int | Non
 
 
 def get_tracklist_diffs(
-    l1: Sequence[_T], l2: Sequence[_T]
+    l1: Sequence[_T],
+    l2: Sequence[_T],
 ) -> tuple[list[_T], list[_T]]:
     l1, l2 = list(l1), list(l2)
     i = get_first_differing_index(reversed(l1), reversed(l2))
@@ -68,15 +68,16 @@ def get_tracklist_diffs(
 
 
 def retry_on_timeout(
-    func: Callable[Concatenate[SpotifyAPIClient, _P], _T]
+    func: Callable[Concatenate[SpotifyAPIClient, _P], _T],
 ) -> Callable[Concatenate[SpotifyAPIClient, _P], _T]:
     @functools.wraps(func)
     def wrapped(self: SpotifyAPIClient, *args: _P.args, **kwargs: _P.kwargs) -> _T:
+        max_retries = 10
         for i in range(11):
             try:
                 return func(self, *args, **kwargs)
-            except (ReadTimeout, ConnectionError):
-                if i == 10:
+            except (ReadTimeout, ConnectionError):  # noqa: PERF203
+                if i == max_retries:
                     raise
                 n = 2**i
                 LOGGER.warning(f"Spotify API error. Retrying in {n} seconds")
@@ -114,28 +115,26 @@ class SpotifyAPIClient:
 
     def _get_items(
         self,
-        response: Any,
+        response: Any,  # noqa: ANN401
         max_offset: int | None = None,
         subkey: str | None = None,
     ) -> list[dict[str, Any]]:
-        def get_subkey(response: Any) -> Any:
+        def get_subkey(response: Any) -> Any:  # noqa: ANN401
             return response if subkey is None else response[subkey]
 
         response = get_subkey(response)
         items: list[dict[str, Any] | None] = response["items"]
-        while response.get("next") and (
-            max_offset is None or response.get("offset", max_offset) < max_offset
-        ):
+        while response.get("next") and (max_offset is None or response.get("offset", max_offset) < max_offset):
             response = get_subkey(self.api.next(response))
             items.extend(response["items"])
         return [item for item in items if item is not None]
 
     @retry_on_timeout
-    def albums(self, ids: Sequence[str], with_all_tracks: bool = False) -> list[Album]:
+    def albums(self, ids: Sequence[str], *, with_all_tracks: bool = False) -> list[Album]:
         albums: list[Any] = []
         for i in tqdm(range(0, len(ids), 20), unit_scale=20):
             albums.extend(
-                [a for a in self.api.albums(ids[i : i + 20])["albums"] if a is not None]
+                [a for a in self.api.albums(ids[i : i + 20])["albums"] if a is not None],
             )
             if not with_all_tracks:
                 continue
@@ -150,12 +149,12 @@ class SpotifyAPIClient:
         return list(map(ArtistAlbum.model_validate, self._get_items(items)))
 
     @retry_on_timeout
-    def create_playlist(
+    def create_playlist(  # noqa: PLR0913
         self,
         name: str,
         description: str = "",
-        public: bool = True,
         *,
+        public: bool = True,
         allow_duplicates: bool = False,
         skip_if_already_exists: bool = False,
     ) -> Playlist:
@@ -167,9 +166,7 @@ class SpotifyAPIClient:
                 LOGGER.info("Playlist already exists, skipping")
                 return matching[0]
             raise PlaylistAlreadyExistsError(self.user_id, name, matching[0].id)
-        resp = self.api.user_playlist_create(
-            self.user_id, name, public=public, description=description
-        )
+        resp = self.api.user_playlist_create(self.user_id, name, public=public, description=description)
         return Playlist.model_validate(resp)
 
     @retry_on_timeout
@@ -178,35 +175,34 @@ class SpotifyAPIClient:
         return User.model_validate(self.api.me())
 
     @retry_on_timeout
-    def playlist(self, id: str) -> Playlist:
-        return Playlist.model_validate(self.api.playlist(id))
+    def playlist(self, playlist_id: str) -> Playlist:
+        return Playlist.model_validate(self.api.playlist(playlist_id))
 
     @retry_on_timeout
-    def playlist_tracks(self, id: str) -> list[PlaylistTrack]:
-        LOGGER.info(f"Fetching tracks of Spotify playlist {id}")
-        items = self._get_items(self.api.playlist_items(id, limit=100))
+    def playlist_tracks(self, playlist_id: str) -> list[PlaylistTrack]:
+        LOGGER.info(f"Fetching tracks of Spotify playlist {playlist_id}")
+        items = self._get_items(self.api.playlist_items(playlist_id, limit=100))
         raw_tracks = [item["track"] for item in items if item["track"] is not None]
         return list(map(PlaylistTrack.model_validate, raw_tracks))
 
     @retry_on_timeout
     def search_albums(self, q: str) -> list[SearchAlbum]:
         LOGGER.info(f"Searching for {q=}")
-        items = self._get_items(
-            self.api.search(q, type="album", limit=50), 950, "albums"
-        )
+        items = self._get_items(self.api.search(q, type="album", limit=50), 950, "albums")
         return list(map(SearchAlbum.model_validate, items))
 
     @retry_on_timeout
     def set_playlist_tracks(
         self,
-        id: str,
+        playlist_id: str,
         ids: Sequence[str],
         current_ids: Sequence[str] | None = None,
+        *,
         use_reorders: bool = False,
     ) -> None:
-        LOGGER.info(f"Updating tracklist of Spotify playlist {id}")
+        LOGGER.info(f"Updating tracklist of Spotify playlist {playlist_id}")
         if current_ids is None:
-            current_ids = [track.id for track in self.playlist_tracks(id)]
+            current_ids = [track.id for track in self.playlist_tracks(playlist_id)]
         else:
             LOGGER.info("Current snapshot already in database")
             current_ids = list(current_ids)
@@ -216,23 +212,24 @@ class SpotifyAPIClient:
         current_ids_set = set(current_ids)
         ids_to_remove_set = current_ids_set - set(ids)
         if use_reorders:
-            ids_to_add = [id for id in ids if id not in current_ids_set]
+            ids_to_add = [track_id for track_id in ids if track_id not in current_ids_set]
             ids_to_remove = list(ids_to_remove_set)
         else:
             ids_to_add, ids_to_remove = get_tracklist_diffs(ids, current_ids)
         LOGGER.info(f"Removing {len(ids_to_remove):,} tracks")
         for ids_chunk in chunk(ids_to_remove, 100):
-            self.api.playlist_remove_all_occurrences_of_items(id, ids_chunk)
+            self.api.playlist_remove_all_occurrences_of_items(playlist_id, ids_chunk)
         LOGGER.info(f"Adding {len(ids_to_add):,} tracks")
         for i, ids_chunk in enumerate(chunk(ids_to_add, 100)):
-            self.api.playlist_add_items(id, ids_chunk, position=i * 100)
+            self.api.playlist_add_items(playlist_id, ids_chunk, position=i * 100)
         if use_reorders:
-            current_ids = ids_to_add + [
-                id for id in current_ids if id not in ids_to_remove_set
-            ]
+            current_ids = ids_to_add + [track_id for track_id in current_ids if track_id not in ids_to_remove_set]
             for reorder in get_tracklist_reorders(ids, current_ids):
                 self.api.playlist_reorder_items(
-                    id, reorder.range_start, reorder.insert_before, reorder.range_length
+                    playlist_id,
+                    reorder.range_start,
+                    reorder.insert_before,
+                    reorder.range_length,
                 )
 
     @retry_on_timeout

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import contextlib
 import functools
 import pathlib
 import sqlite3
 import tempfile
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Concatenate,
@@ -15,13 +18,14 @@ from typing import (
 )
 
 import boto3
-from mypy_boto3_s3 import S3Client
 import sqlalchemy
 from sqlalchemy import Engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
-from .. import env
+from lofi import env
 
+if TYPE_CHECKING:
+    from mypy_boto3_s3 import S3Client
 
 __all__ = [
     "Session",
@@ -34,7 +38,7 @@ __all__ = [
 
 
 _T = TypeVar("_T")
-_Cov = TypeVar("_Cov", covariant=True)
+_T_co = TypeVar("_T_co", covariant=True)
 _P = ParamSpec("_P")
 
 
@@ -64,18 +68,20 @@ class TempFileManager:
                 self.current_path = None
 
 
-class InjectedBucketAndDbName(Protocol, Generic[_Cov]):
+class InjectedBucketAndDbName(Protocol, Generic[_T_co]):
     def __call__(
-        self, bucket_name: str | None = None, db_name: str | None = None
-    ) -> _Cov:  # pragma: no cover
+        self,
+        bucket_name: str | None = None,
+        db_name: str | None = None,
+    ) -> _T_co:  # pragma: no cover
         ...
 
 
 def inject_bucket_and_db_name_from_env(
-    func: Callable[[str, str], _Cov]
-) -> InjectedBucketAndDbName[_Cov]:
+    func: Callable[[str, str], _T_co],
+) -> InjectedBucketAndDbName[_T_co]:
     @functools.wraps(func)
-    def wrapped(bucket_name: str | None = None, db_name: str | None = None) -> _Cov:
+    def wrapped(bucket_name: str | None = None, db_name: str | None = None) -> _T_co:
         if bucket_name is None:
             bucket_name = env.aws_bucket_name()
         if db_name is None:
@@ -89,7 +95,7 @@ def create_engine(db_name: str) -> Engine:
     """Create SQLAlchemy engine."""
     engine = sqlalchemy.create_engine(get_url(db_name), poolclass=sqlalchemy.NullPool)
 
-    def enable_foreign_keys(dbapi_connection: Any, connection_record: Any) -> None:
+    def enable_foreign_keys(dbapi_connection: Any, connection_record: Any) -> None:  # noqa: ANN401, ARG001
         if isinstance(dbapi_connection, sqlite3.Connection):
             cursor = dbapi_connection.cursor()
             cursor.execute("pragma foreign_keys=on")
@@ -119,9 +125,10 @@ def download_db(bucket_name: str, db_name: str) -> Iterator[pathlib.Path]:
     try:
         # Do not download and use local file instead. Useful for development.
         yield env.local_db()
-        return
     except KeyError:
         pass
+    else:
+        return
     with get_temp_file_manager().get_temp_file(bucket_name, db_name) as path:
         yield path
 
@@ -143,7 +150,7 @@ def get_sessionmaker(db_name: str) -> sessionmaker[Session]:
     return sessionmaker(bind=create_engine(db_name))
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_temp_file_manager() -> TempFileManager:
     return TempFileManager()
 
@@ -160,7 +167,7 @@ def upload_local_db(bucket_name: str, db_name: str) -> None:
 
 
 def with_connection(func: Callable[Concatenate[Session, _P], _T]) -> Callable[_P, _T]:
-    """Decorator to provide a database connection to a function."""
+    """Provide a database connection to a function."""
 
     @functools.wraps(func)
     def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _T:

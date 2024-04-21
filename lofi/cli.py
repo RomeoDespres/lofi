@@ -1,4 +1,5 @@
 import pathlib
+
 import click
 
 import lofi
@@ -6,8 +7,7 @@ import lofi
 
 @click.group
 def main() -> None:
-    """Main CLI entry point."""
-    pass
+    """Run main CLI entry point."""
 
 
 @main.command
@@ -27,7 +27,6 @@ def etl() -> None:
 @main.group
 def db() -> None:
     """Database commands."""
-    pass
 
 
 @db.command
@@ -45,7 +44,6 @@ def upload() -> None:
 @main.group
 def frontend() -> None:
     """Frontend commands."""
-    pass
 
 
 @frontend.command

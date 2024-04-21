@@ -1,13 +1,13 @@
-"""add snapshot table
+"""add snapshot table.
 
 Revision ID: 8adb8a331f45
 Revises: 34f171ff838a
 Create Date: 2023-08-04 11:11:15.398319
 
 """
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "8adb8a331f45"
@@ -20,7 +20,7 @@ def upgrade() -> None:
     op.create_table(
         "snapshot",
         sa.Column(
-            "id", sa.String(), nullable=False, comment="Spotify playlist snapshot ID"
+            "id", sa.String(), nullable=False, comment="Spotify playlist snapshot ID",
         ),
         sa.Column(
             "position",

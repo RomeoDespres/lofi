@@ -1,13 +1,13 @@
-"""add popularity to streams reference table
+"""add popularity to streams reference table.
 
 Revision ID: fcba2a965e33
 Revises: 2b80c7ddb34b
 Create Date: 2024-01-06 13:54:14.003215
 
 """
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "fcba2a965e33"
@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("streams_q2", sa.BigInteger(), nullable=False),
         sa.Column("streams_q3", sa.BigInteger(), nullable=False),
         sa.PrimaryKeyConstraint(
-            "date", "popularity", name=op.f("pk_popularity_streams")
+            "date", "popularity", name=op.f("pk_popularity_streams"),
         ),
     )
 

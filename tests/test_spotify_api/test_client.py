@@ -1,63 +1,50 @@
+from __future__ import annotations
+
 import datetime
 import time
-from typing import Any, Sequence
+from typing import TYPE_CHECKING, Any, Sequence
 from unittest.mock import Mock, patch
 
 import pytest
 from requests import ConnectionError, ReadTimeout
 
-from lofi import db
 from lofi.spotify_api import SpotifyAPIClient
-from lofi.spotify_api.client import (
-    chunk,
-    get_first_differing_index,
-    get_tracklist_diffs,
-    retry_on_timeout,
-)
+from lofi.spotify_api.client import chunk, get_first_differing_index, get_tracklist_diffs, retry_on_timeout
 from lofi.spotify_api.errors import PlaylistAlreadyExistsError
 from lofi.spotify_api.models import ArtistAlbum, Playlist, User
 
+if TYPE_CHECKING:
+    from lofi import db
 
 DEFAULT_PATCHED_PLAYLIST = {
     "id": "",
     "images": [],
     "name": "",
-    "owner": {
-        "id": "",
-        "display_name": "",
-    },
+    "owner": {"id": "", "display_name": ""},
     "snapshot_id": "",
 }
 
 
-@pytest.fixture
+@pytest.fixture()
 def default_user_id(monkeypatch: pytest.MonkeyPatch) -> str:
     monkeypatch.setenv("SPOTIFY_USER_ID", user_id := "foo")
     return user_id
 
 
-def get_patched_client(session: db.Session, **kwargs: Any) -> SpotifyAPIClient:
+def get_patched_client(session: db.Session, **kwargs: object) -> SpotifyAPIClient:
     client = SpotifyAPIClient(session)
     for key, value in kwargs.items():
         setattr(client.api, key, value)
     return client
 
 
-def test_client_uses_env_variable_if_no_user_id_is_provided(
-    session: db.Session, default_user_id: str
-) -> None:
+def test_client_uses_env_variable_if_no_user_id_is_provided(session: db.Session, default_user_id: str) -> None:
     assert SpotifyAPIClient(session).user_id == default_user_id
 
 
 @pytest.mark.parametrize(
-    ["l1", "l2", "expected"],
-    [
-        ([], [], None),
-        ([], [1, 2], None),
-        ([1], [1, 2], None),
-        ([1, 2, 3], [1, 2, 4], 2),
-        ([1, 2], [1, 0, 3], 1),
-    ],
+    ("l1", "l2", "expected"),
+    [([], [], None), ([], [1, 2], None), ([1], [1, 2], None), ([1, 2, 3], [1, 2, 4], 2), ([1, 2], [1, 0, 3], 1)],
 )
 def test_get_first_differing_index(l1: list[int], l2: list[int], expected: int) -> None:
     assert get_first_differing_index(l1, l2) == expected
@@ -65,7 +52,7 @@ def test_get_first_differing_index(l1: list[int], l2: list[int], expected: int) 
 
 
 @pytest.mark.parametrize(
-    ["target", "current", "expected_added", "expected_removed"],
+    ("target", "current", "expected_added", "expected_removed"),
     [
         ([], [], [], []),
         ([], [1, 2], [], [1, 2]),
@@ -85,13 +72,11 @@ def test_get_tracklist_diffs(
 
 @pytest.mark.usefixtures("default_user_id")
 @pytest.mark.parametrize("exc", [ConnectionError, ReadTimeout])
-def test_retry_on_timeout(
-    session: db.Session, exc: type[ConnectionError | ReadTimeout]
-) -> None:
+def test_retry_on_timeout(session: db.Session, exc: type[ConnectionError | ReadTimeout]) -> None:
     with patch.object(time, "sleep") as mock:
 
         @retry_on_timeout
-        def raise_exc(self: SpotifyAPIClient) -> None:
+        def raise_exc(self: SpotifyAPIClient) -> None:  # noqa: ARG001
             raise exc()
 
         with pytest.raises(exc):
@@ -101,15 +86,9 @@ def test_retry_on_timeout(
     assert call_args == [(2**i,) for i in range(10)]
 
 
-@pytest.mark.parametrize(
-    ["it", "n", "expected"],
-    [
-        ([], 2, []),
-        (range(5), 2, [[0, 1], [2, 3], [4]]),
-    ],
-)
+@pytest.mark.parametrize(("it", "n", "expected"), [([], 2, []), (range(5), 2, [[0, 1], [2, 3], [4]])])
 def test_chunk(it: Sequence[int], n: int, expected: list[list[int]]) -> None:
-    chunks = list(map(lambda c: list(c), chunk(it, n)))
+    chunks = [list(c) for c in chunk(it, n)]
     assert chunks == expected
 
 
@@ -122,34 +101,29 @@ def test_me(session: db.Session, default_user_id: str) -> None:
 
 @pytest.mark.usefixtures("default_user_id")
 @pytest.mark.parametrize("fetch_current_tracklist", [True, False])
-def test_set_playlist_tracks(
-    session: db.Session, fetch_current_tracklist: bool
-) -> None:
+def test_set_playlist_tracks(session: db.Session, *, fetch_current_tracklist: bool) -> None:
     playlist_id = "foo"
     playlists: dict[str, list[str]] = {
-        playlist_id: list(map(str, reversed(range(10, 1000, 3))))
+        playlist_id: list(map(str, reversed(range(10, 1000, 3)))),
     }
 
-    def add_items(id: str, ids: list[str], position: int) -> None:
-        playlists[id] = playlists[id][:position] + ids + playlists[id][position:]
+    def add_items(playlist_id: str, ids: list[str], position: int) -> None:
+        playlists[playlist_id] = playlists[playlist_id][:position] + ids + playlists[playlist_id][position:]
 
-    def remove_items(id: str, ids: list[str]) -> None:
+    def remove_items(playlist_id: str, ids: list[str]) -> None:
         ids_set = set(ids)
-        playlists[id] = [t for t in playlists[id] if t not in ids_set]
+        playlists[playlist_id] = [t for t in playlists[playlist_id] if t not in ids_set]
 
-    def get_items(id: str, limit: int, offset: int = 0) -> dict[str, Any]:
+    def get_items(playlist_id: str, limit: int, offset: int = 0) -> dict[str, Any]:
         return {
-            "id": id,
-            "items": [
-                {"track": {"id": track_id}}
-                for track_id in playlists[id][offset : offset + limit]
-            ],
+            "id": playlist_id,
+            "items": [{"track": {"id": track_id}} for track_id in playlists[playlist_id][offset : offset + limit]],
             "offset": offset,
             "limit": limit,
-            "next": None if offset + limit >= len(playlists[id]) else True,
+            "next": None if offset + limit >= len(playlists[playlist_id]) else True,
         }
 
-    def next(resp: Any) -> Any:
+    def next(resp: Any) -> object:  # noqa: A001, ANN401
         return get_items(resp["id"], resp["limit"], resp["offset"] + resp["limit"])
 
     api = get_patched_client(
@@ -171,42 +145,34 @@ def test_set_playlist_tracks(
 def test_snapshot_id(session: db.Session) -> None:
     snapshot_id = "foo"
     patched_playlist = {**DEFAULT_PATCHED_PLAYLIST, "snapshot_id": snapshot_id}
-    api = get_patched_client(session, playlist=lambda id: patched_playlist)
+    api = get_patched_client(session, playlist=lambda playlist_id: patched_playlist)  # noqa: ARG005
     assert api.playlist("").snapshot_id == snapshot_id
 
 
-def test_create_playlist_that_already_exists_raises_error(
-    session: db.Session, default_user_id: str
-) -> None:
+def test_create_playlist_that_already_exists_raises_error(session: db.Session, default_user_id: str) -> None:
     playlist = Playlist.model_validate(DEFAULT_PATCHED_PLAYLIST)
     api = get_patched_client(
-        session, user_playlists=Mock(return_value={"items": [playlist.model_dump()]})
+        session,
+        user_playlists=Mock(return_value={"items": [playlist.model_dump()]}),
     )
-    with pytest.raises(PlaylistAlreadyExistsError) as e:
+    with pytest.raises(PlaylistAlreadyExistsError) as exc_info:
         api.create_playlist(playlist.name)
-        err = e.errisinstance
-        assert isinstance(err, PlaylistAlreadyExistsError)
-        assert err.user_id == default_user_id
-        assert err.playlist_id == playlist.id
-        assert err.name == playlist.name
+    err = exc_info.value
+    assert err.user_id == default_user_id
+    assert err.playlist_id == playlist.id
+    assert err.name == playlist.name
 
 
 @pytest.mark.usefixtures("default_user_id")
-def test_create_playlist_that_already_exists_returns_existing(
-    session: db.Session,
-) -> None:
+def test_create_playlist_that_already_exists_returns_existing(session: db.Session) -> None:
     playlist = Playlist.model_validate(DEFAULT_PATCHED_PLAYLIST)
-    api = get_patched_client(
-        session, user_playlists=Mock(return_value={"items": [playlist.model_dump()]})
-    )
+    api = get_patched_client(session, user_playlists=Mock(return_value={"items": [playlist.model_dump()]}))
     received = api.create_playlist(playlist.name, skip_if_already_exists=True)
     assert received == playlist
 
 
 @pytest.mark.usefixtures("default_user_id")
-def test_create_playlist_that_does_not_exist(
-    session: db.Session,
-) -> None:
+def test_create_playlist_that_does_not_exist(session: db.Session) -> None:
     playlist = Playlist.model_validate(DEFAULT_PATCHED_PLAYLIST)
     create_playlist = Mock(return_value=playlist.model_dump())
     api = get_patched_client(
@@ -223,12 +189,7 @@ def test_create_playlist_that_does_not_exist(
 def test_get_artist_albums(session: db.Session) -> None:
     artist_id = "foo"
     props = {"release_date": datetime.date.today(), "total_tracks": 10}
-    albums = [
-        {"id": "foo", "name": "Foo", **props},
-        {"id": "bar", "name": "Bar", **props},
-    ]
-    api = get_patched_client(
-        session, artist_albums=Mock(return_value={"items": albums})
-    )
+    albums = [{"id": "foo", "name": "Foo", **props}, {"id": "bar", "name": "Bar", **props}]
+    api = get_patched_client(session, artist_albums=Mock(return_value={"items": albums}))
     received = api.artist_albums(artist_id)
     assert received == list(map(ArtistAlbum.model_validate, albums))

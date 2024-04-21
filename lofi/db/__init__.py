@@ -24,7 +24,6 @@ from .models import (
     User,
 )
 
-
 __all__ = [
     "Album",
     "AlbumPopularity",

@@ -1,20 +1,15 @@
+from __future__ import annotations
+
 import datetime
 from typing import Iterable, Protocol, Sequence
 
-from spotipy import SpotifyException  # type: ignore
+from spotipy import SpotifyException  # type: ignore[import]
 from sqlalchemy import func, join, select, union
 from tqdm import tqdm
 
-from .. import db
-from .. import env
-from ..spotify_api import (
-    Album,
-    ImageUrl,
-    Playlist,
-    SearchAlbum,
-    SpotifyAPIClient,
-    Track,
-)
+from lofi import db, env
+from lofi.spotify_api import Album, ImageUrl, Playlist, SearchAlbum, SpotifyAPIClient, Track
+
 from .errors import LabelAlreadyExistsError
 from .log import LOGGER
 
@@ -35,7 +30,9 @@ def add_label(session: db.Session, label_name: str) -> None:
     if session.get(db.Label, label_name) is not None:
         raise LabelAlreadyExistsError(label_name)
     playlist = SpotifyAPIClient(session).create_playlist(
-        label_name, f"All {label_name} releases", skip_if_already_exists=True
+        label_name,
+        f"All {label_name} releases",
+        skip_if_already_exists=True,
     )
     db_playlist = session.merge(db.Playlist(id=playlist.id, is_editorial=False))
     session.add(db.Label(name=label_name, is_indie=False, playlist=db_playlist))
@@ -45,8 +42,10 @@ def add_label(session: db.Session, label_name: str) -> None:
 def collect_albums(
     api: SpotifyAPIClient,
     search_results: Sequence[SearchAlbum],
-    excluded_ids: set[str] = set(),
+    excluded_ids: set[str] | None = None,
 ) -> list[Album]:
+    if excluded_ids is None:
+        excluded_ids = set()
     ids = list({a.id for a in search_results} - excluded_ids)
     LOGGER.info(f"Collecting {len(ids):,} albums")
     return api.albums(ids, with_all_tracks=True)
@@ -59,21 +58,7 @@ def collect_albums_popularity(api: SpotifyAPIClient, session: db.Session) -> Non
     upload_albums_popularity(session, albums)
 
 
-# def collect_artist_albums(
-#     session: db.Session, artist_id: str, excluded_album_ids: set[str]
-# ) -> None:
-#     albums = api.albums(album_ids, with_all_tracks=True)
-#     tracks = collect_tracks(api, albums)
-#     upload_objects_artists(session, tracks)
-#     upload_objects_artists(session, albums)
-#     upload_albums(session, albums)
-#     upload_tracks(session, tracks)
-#     excluded_album_ids |= set(album_ids)
-
-
-def collect_indie_albums(
-    session: db.Session, labels: Sequence[db.Label], excluded_album_ids: set[str]
-) -> None:
+def collect_indie_albums(session: db.Session, labels: Sequence[db.Label], excluded_album_ids: set[str]) -> None:
     LOGGER.info("Collecting indie albums")
     api = SpotifyAPIClient(session)
     artist_ids = get_label_artist_ids(session, labels)
@@ -84,13 +69,14 @@ def collect_indie_albums(
         for album in api.artist_albums(artist_id)
         if album.id not in excluded_album_ids
     }
-    print(f"Collected {len(album_ids):,} album IDs")
+    LOGGER.info(f"Collected {len(album_ids):,} album IDs")
 
 
-def collect_label_albums(
-    session: db.Session, label: db.Label, excluded_album_ids: set[str] = set()
-) -> None:
+def collect_label_albums(session: db.Session, label: db.Label, excluded_album_ids: set[str] | None = None) -> None:
     LOGGER.info(f"Collecting label albums for {label.name}")
+    if excluded_album_ids is None:
+        excluded_album_ids = set()
+
     api = SpotifyAPIClient(session)
     search_results = search_missing_albums(api, label)
     albums = collect_albums(api, search_results, excluded_album_ids)
@@ -127,8 +113,8 @@ def get_album_ids_with_outdated_popularity(session: db.Session) -> Sequence[str]
         db.Album.id.not_in(
             select(db.AlbumPopularity.album_id)
             .where(db.AlbumPopularity.date == datetime.date.today())
-            .scalar_subquery()
-        )
+            .scalar_subquery(),
+        ),
     )
     return session.execute(sql).scalars().all()
 
@@ -146,9 +132,7 @@ def get_expected_tracklist(session: db.Session, label_name: str) -> Sequence[str
     subq = (
         select(
             db.Track.id,
-            func.row_number()
-            .over(partition_by=db.Track.isrc, order_by=db.Album.release_date)
-            .label("track_rank"),
+            func.row_number().over(partition_by=db.Track.isrc, order_by=db.Album.release_date).label("track_rank"),
         )
         .select_from(join(db.Track, db.Album))
         .where(db.Album.label_name == label_name)
@@ -162,18 +146,16 @@ def get_expected_tracklist(session: db.Session, label_name: str) -> Sequence[str
 def get_label_artist_ids(session: db.Session, labels: Sequence[db.Label]) -> list[str]:
     label_names = [label.name for label in labels]
     album_id_scalar_subquery = select(
-        select(db.Album.id).where(db.Album.label_name.in_(label_names)).cte().c.id
+        select(db.Album.id).where(db.Album.label_name.in_(label_names)).cte().c.id,
     ).scalar_subquery()
     sql = union(
         select(db.RelArtistAlbum.artist_id).where(
-            db.RelArtistAlbum.album_id.in_(album_id_scalar_subquery)
+            db.RelArtistAlbum.album_id.in_(album_id_scalar_subquery),
         ),
         select(db.RelArtistTrack.artist_id).where(
             db.RelArtistTrack.track_id.in_(
-                select(db.Track.id)
-                .where(db.Track.album_id.in_(album_id_scalar_subquery))
-                .scalar_subquery()
-            )
+                select(db.Track.id).where(db.Track.album_id.in_(album_id_scalar_subquery)).scalar_subquery(),
+            ),
         ),
     )
     return list(session.execute(sql).scalars())
@@ -197,9 +179,7 @@ def get_new_lofi_tracklist(session: db.Session) -> list[str]:
             db.Track.isrc,
             db.Track.id,
             db.Album.release_date,
-            func.row_number()
-            .over(partition_by=db.Track.isrc, order_by=db.Album.release_date)
-            .label("id_rank"),
+            func.row_number().over(partition_by=db.Track.isrc, order_by=db.Album.release_date).label("id_rank"),
         )
         .select_from(join(db.Track, db.Album).join(db.Label))
         .where(db.Label.is_lofi)
@@ -223,19 +203,18 @@ def get_new_lofi_tracklist(session: db.Session) -> list[str]:
         )
         .where(
             db.TrackPopularity.track_id.in_(
-                select(db.Track.id)
-                .where(db.Track.isrc.in_(select(track.c.isrc).scalar_subquery()))
-                .scalar_subquery()
-            )
+                select(db.Track.id).where(db.Track.isrc.in_(select(track.c.isrc).scalar_subquery())).scalar_subquery(),
+            ),
         )
         .subquery()
     )
     popularity = (
         select(
-            db.Track.isrc, func.max(popularity_subq.c.popularity).label("popularity")
+            db.Track.isrc,
+            func.max(popularity_subq.c.popularity).label("popularity"),
         )
         .select_from(
-            join(db.Track, popularity_subq, db.Track.id == popularity_subq.c.track_id)
+            join(db.Track, popularity_subq, db.Track.id == popularity_subq.c.track_id),
         )
         .where(popularity_subq.c.date_rank == 1)
         .group_by(db.Track.isrc)
@@ -250,11 +229,7 @@ def get_new_lofi_tracklist(session: db.Session) -> list[str]:
 
 
 def get_snapshot(session: db.Session, snapshot_id: str) -> list[str]:
-    sql = (
-        select(db.Snapshot.track_id)
-        .where(db.Snapshot.id == snapshot_id)
-        .order_by(db.Snapshot.position)
-    )
+    sql = select(db.Snapshot.track_id).where(db.Snapshot.id == snapshot_id).order_by(db.Snapshot.position)
     return list(session.execute(sql).scalars())
 
 
@@ -263,8 +238,8 @@ def get_track_ids_with_outdated_popularity(session: db.Session) -> Sequence[str]
         db.Track.id.not_in(
             select(db.TrackPopularity.track_id)
             .where(db.TrackPopularity.date == datetime.date.today())
-            .scalar_subquery()
-        )
+            .scalar_subquery(),
+        ),
     )
     return session.execute(sql).scalars().all()
 
@@ -292,7 +267,9 @@ def run(session: db.Session) -> None:
     for i, label in enumerate(labels := get_labels(session)):
         LOGGER.info(f"{i + 1}/{len(labels)} Collecting data for {label.name}")
         collect_label_albums(
-            session, label, excluded_album_ids=get_all_album_ids(session)
+            session,
+            label,
+            excluded_album_ids=get_all_album_ids(session),
         )
         update_playlist(session, label, playlists[label.playlist_id])
     collect_popularity(session)
@@ -309,11 +286,12 @@ def snapshot_is_in_db(session: db.Session, snapshot_id: str) -> bool:
 def update_editorial_playlists(session: db.Session) -> None:
     LOGGER.info("Updating editorial playlists")
     api = SpotifyAPIClient(session)
+    not_found_http_status = 404
     for playlist in tqdm(get_editorial_playlists(session)):
         try:
             spotify_playlist = api.playlist(playlist.id)
         except SpotifyException as e:
-            if e.http_status == 404:
+            if e.http_status == not_found_http_status:
                 # This playlist does not exist anymore!
                 continue
             raise
@@ -359,7 +337,9 @@ def update_new_lofi(session: db.Session) -> None:
 
 def upload_album_popularity(session: db.Session, album: Album) -> None:
     popularity = db.AlbumPopularity(
-        album_id=album.id, date=datetime.date.today(), popularity=album.popularity
+        album_id=album.id,
+        date=datetime.date.today(),
+        popularity=album.popularity,
     )
     session.merge(popularity)
 
@@ -374,7 +354,7 @@ def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
                     is_lofi=True,
                     is_indie=True,
                     playlist=session.merge(db.Playlist(id="")),
-                )
+                ),
             )
         session.merge(
             db.Album(
@@ -383,7 +363,7 @@ def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
                 name=album.name,
                 release_date=album.release_date,
                 type=album.album_type,
-            )
+            ),
         )
         upload_album_popularity(session, album)
         for artist_position, artist in enumerate(album.artists):
@@ -392,7 +372,7 @@ def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
                     artist_id=artist.id,
                     album_id=album.id,
                     artist_position=artist_position,
-                )
+                ),
             )
 
 
@@ -410,29 +390,29 @@ def upload_objects_artists(session: db.Session, objs: Iterable[HasArtists]) -> N
 
 
 def upload_snapshot(
-    session: db.Session, playlist_id: str, snapshot_id: str, track_ids: Iterable[str]
+    session: db.Session,
+    playlist_id: str,
+    snapshot_id: str,
+    track_ids: Iterable[str],
 ) -> None:
     LOGGER.info("Uploading playlist snapshot")
     if snapshot_is_in_db(session, snapshot_id):
         LOGGER.info("Snapshot already in database, skipping")
         return
-    timestamp = datetime.datetime.utcnow()
+    timestamp = datetime.datetime.now(datetime.UTC)
     for position, track_id in enumerate(tqdm(track_ids)):
-        session.merge(
-            db.Snapshot(
-                id=snapshot_id,
-                position=position,
-                playlist_id=playlist_id,
-                timestamp=timestamp,
-                track_id=track_id,
-            )
+        snapshot = db.Snapshot(
+            id=snapshot_id,
+            position=position,
+            playlist_id=playlist_id,
+            timestamp=timestamp,
+            track_id=track_id,
         )
+        session.merge(snapshot)
 
 
 def upload_track_popularity(session: db.Session, track: Track) -> None:
-    popularity = db.TrackPopularity(
-        track_id=track.id, date=datetime.date.today(), popularity=track.popularity
-    )
+    popularity = db.TrackPopularity(track_id=track.id, date=datetime.date.today(), popularity=track.popularity)
     session.merge(popularity)
 
 
@@ -446,7 +426,7 @@ def upload_tracks(session: db.Session, tracks: Sequence[Track]) -> None:
                 isrc=track.external_ids.isrc,
                 name=track.name,
                 position=track.track_number,
-            )
+            ),
         )
         upload_track_popularity(session, track)
         for artist_position, artist in enumerate(track.artists):
@@ -455,7 +435,7 @@ def upload_tracks(session: db.Session, tracks: Sequence[Track]) -> None:
                     artist_id=artist.id,
                     track_id=track.id,
                     artist_position=artist_position,
-                )
+                ),
             )
 
 
