@@ -13,25 +13,25 @@
 | alembic/versions/5319ad355973\_add\_label\_is\_lofi.py                      |       10 |        0 |    100% |           |
 | alembic/versions/73619481350c\_add\_editorial\_playlists.py                 |       36 |        0 |    100% |           |
 | alembic/versions/fcba2a965e33\_add\_popularity\_to\_streams\_reference\_.py |       10 |        0 |    100% |           |
-| lofi/\_\_init\_\_.py                                                        |        4 |        0 |    100% |           |
+| lofi/\_\_init\_\_.py                                                        |        2 |        0 |    100% |           |
 | lofi/db/\_\_init\_\_.py                                                     |        3 |        0 |    100% |           |
 | lofi/db/connection.py                                                       |       98 |        0 |    100% |           |
-| lofi/db/models.py                                                           |       86 |        0 |    100% |           |
-| lofi/env.py                                                                 |       14 |        1 |     93% |        23 |
+| lofi/db/models.py                                                           |       84 |        0 |    100% |           |
+| lofi/env.py                                                                 |       14 |        1 |     93% |        22 |
 | lofi/etl/\_\_init\_\_.py                                                    |        2 |        0 |    100% |           |
 | lofi/etl/errors.py                                                          |        3 |        0 |    100% |           |
 | lofi/etl/log.py                                                             |        2 |        0 |    100% |           |
-| lofi/etl/main.py                                                            |      210 |      146 |     30% |50-52, 56-59, 77-87, 93-102, 106-109, 113-115, 119-122, 126-133, 137, 141-142, 146-159, 163-179, 183-185, 189-190, 253-258, 262-269, 274-276, 280-286, 291-301, 305-306, 310-323, 327-332, 336-350, 354-357, 361-364, 368-390, 400-402, 406-409, 415-421, 433-436, 440-453, 463-465 |
+| lofi/etl/main.py                                                            |      216 |      152 |     30% |47-51, 55-58, 62-72, 76-88, 92-95, 99-101, 105-108, 112-119, 123, 127-128, 132-143, 147-161, 165-167, 171-172, 232-233, 237-244, 249-251, 255-261, 266-278, 282-283, 287-301, 305-310, 314-328, 332-335, 339-344, 348-370, 380-382, 386-389, 398-411, 415-416, 420-433, 443-445 |
 | lofi/log.py                                                                 |       13 |        0 |    100% |           |
 | lofi/spotify\_api/\_\_init\_\_.py                                           |        3 |        0 |    100% |           |
 | lofi/spotify\_api/cache\_handler.py                                         |       27 |        0 |    100% |           |
-| lofi/spotify\_api/client.py                                                 |      148 |       21 |     86% |135-145, 193-197, 214-215, 219-220, 230-234, 240-247 |
+| lofi/spotify\_api/client.py                                                 |      148 |       21 |     86% |134-144, 190-192, 210-211, 215-216, 226-228, 237-244 |
 | lofi/spotify\_api/errors.py                                                 |        5 |        0 |    100% |           |
 | lofi/spotify\_api/log.py                                                    |        2 |        0 |    100% |           |
-| lofi/spotify\_api/models.py                                                 |       60 |        1 |     98% |        74 |
+| lofi/spotify\_api/models.py                                                 |       61 |        1 |     98% |        75 |
 | lofi/spotify\_api/token.py                                                  |        8 |        0 |    100% |           |
-| lofi/spotify\_api/tracklist\_utils.py                                       |       59 |        0 |    100% |           |
-|                                                                   **TOTAL** |  **898** |  **169** | **81%** |           |
+| lofi/spotify\_api/tracklist\_utils.py                                       |       61 |        0 |    100% |           |
+|                                                                   **TOTAL** |  **903** |  **175** | **81%** |           |
 
 
 ## Setup coverage badge
