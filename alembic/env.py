@@ -1,12 +1,12 @@
+# noqa: INP001
+
 from contextlib import nullcontext
 from logging.config import fileConfig
 from typing import ContextManager
 
 from alembic import context
-
 from lofi import db
 from lofi.db.models import Base
-
 
 config = context.config
 

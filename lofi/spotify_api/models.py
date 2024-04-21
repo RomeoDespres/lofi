@@ -1,16 +1,17 @@
+from __future__ import annotations
+
 import datetime
 from typing import Generic, Sequence, TypeVar
 
 from pydantic import BaseModel, field_validator
 
-from .. import db
-
+from lofi import db  # noqa: TCH001
 
 _T = TypeVar("_T")
 
 
 def parse_date(s: str) -> datetime.date:
-    return datetime.datetime.strptime(f"{s}-01-01"[:10], "%Y-%m-%d").date()
+    return datetime.datetime.strptime(f"{s}-01-01"[:10], "%Y-%m-%d").date()  # noqa: DTZ007
 
 
 class HasIdAndName(BaseModel):

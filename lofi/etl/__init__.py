@@ -6,7 +6,6 @@ from .main import (
     update_new_lofi,
 )
 
-
 __all__ = [
     "add_label",
     "collect_label_albums",

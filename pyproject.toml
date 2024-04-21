@@ -1,3 +1,6 @@
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:"]
+
 [tool.coverage.run]
 omit = ["tests/*"]
 relative_files = true
@@ -16,3 +19,26 @@ env = [
     "SPOTIPY_REDIRECT_URI=http://SPOTIPY_REDIRECT_URI",
 ]
 testpaths = ["tests"]
+
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+ignore = [
+    "ANN101",
+    "ANN102",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D107",
+    "D203",
+    "D213",
+    "DTZ011",
+    "PD901",
+    "S101"
+]
+select = ["ALL"]

@@ -8,8 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, OperationalError
 
 import lofi.db.connection
-
-from ..conftest import PatchedS3Client
+from tests.conftest import PatchedS3Client
 
 
 @pytest.mark.usefixtures("patch_get_s3_client")
@@ -30,9 +29,11 @@ def test_download_db_stores_updates() -> None:
 
 @pytest.mark.usefixtures("patch_get_s3_client")
 def test_download_db_twice_returns_same_file() -> None:
-    with lofi.db.connection.download_db("foo", "bar") as db_path_1:
-        with lofi.db.connection.download_db("foo", "bar") as db_path_2:
-            assert db_path_1 == db_path_2
+    with (
+        lofi.db.connection.download_db("foo", "bar") as db_path_1,
+        lofi.db.connection.download_db("foo", "bar") as db_path_2,
+    ):
+        assert db_path_1 == db_path_2
 
 
 @pytest.mark.usefixtures("patch_get_s3_client")
@@ -81,7 +82,7 @@ def test_connect_to_db_enables_foreign_keys() -> None:
     with lofi.db.connect() as session:
         session.execute(text("create table t1(a int primary key)"))
         session.execute(
-            text("create table t2(a int primary key, foreign key (a) references t1(a))")
+            text("create table t2(a int primary key, foreign key (a) references t1(a))"),
         )
         with pytest.raises(IntegrityError):
             session.execute(text("insert into t2(a) values (1)"))
@@ -101,7 +102,8 @@ def test_connect_to_db_twice() -> None:
 
 
 def test_connect_to_db_uses_env_by_default(
-    monkeypatch: pytest.MonkeyPatch, patch_get_s3_client: PatchedS3Client
+    monkeypatch: pytest.MonkeyPatch,
+    patch_get_s3_client: PatchedS3Client,
 ) -> None:
     bucket_name = "foo"
     db_name = "bar"

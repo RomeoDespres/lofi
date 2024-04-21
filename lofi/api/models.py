@@ -1,5 +1,7 @@
-from humps import camelize
+from __future__ import annotations
+
 import pydantic
+from humps import camelize
 
 
 class BaseModel(pydantic.BaseModel):

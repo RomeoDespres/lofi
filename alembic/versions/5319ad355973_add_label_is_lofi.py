@@ -1,13 +1,14 @@
-"""add label.is_lofi
+"""add label.is_lofi.
 
 Revision ID: 5319ad355973
 Revises: 8adb8a331f45
 Create Date: 2023-08-29 10:27:13.760337
 
 """
-from alembic import op
+
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "5319ad355973"
@@ -25,7 +26,7 @@ def upgrade() -> None:
             nullable=False,
             comment="Whether this label is a lofi label. "
             "If False, will not be included in stats reports and new lofi playlist.",
-            server_default=sa.literal(True),
+            server_default=sa.literal(value=True),
         ),
     )
 

@@ -1,7 +1,9 @@
-import datetime
+from __future__ import annotations
+
+import datetime  # noqa: TCH003
 from typing import TypedDict
 
-from lofi import db
+from lofi import db  # noqa: TCH001
 
 
 class AlbumData(TypedDict):

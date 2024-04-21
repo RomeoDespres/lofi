@@ -1,6 +1,8 @@
-from pathlib import Path
-from setuptools import setup
+from __future__ import annotations
 
+from pathlib import Path
+
+from setuptools import setup
 
 name = "lofi"
 here = Path(__file__).absolute().parent

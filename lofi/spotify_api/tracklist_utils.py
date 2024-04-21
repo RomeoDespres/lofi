@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 from typing import Generic, Iterator, Sequence, TypeVar, overload
 
 from pydantic import BaseModel
-
 
 _T = TypeVar("_T")
 
@@ -52,26 +53,25 @@ class TracklistReorder(BaseModel):
 
 
 def get_tracklist_reorders(
-    target: Sequence[_T], current: Sequence[_T]
+    target: Sequence[_T],
+    current: Sequence[_T],
 ) -> Iterator[TracklistReorder]:
     target = list(target)
     current = list(current)
     invertible_current = InvertibleList(current)
+    max_reorder_length = 100
 
     def get_next_reorder(insert_before: int) -> TracklistReorder | None:
         if insert_before >= len(current):
             return None
-        while (
-            insert_before < len(current)
-            and invertible_current[insert_before] == target[insert_before]
-        ):
+        while insert_before < len(current) and invertible_current[insert_before] == target[insert_before]:
             insert_before += 1
         if insert_before == len(current):
             return None
         start = invertible_current.index(target[insert_before])
         length = 1
         while (
-            length <= 100
+            length <= max_reorder_length
             and (end := (start + length - 1)) < len(target)
             and target[length - 1] == invertible_current[end]
         ):
@@ -79,16 +79,16 @@ def get_tracklist_reorders(
         if length > 1:
             length -= 1
         return TracklistReorder(
-            insert_before=insert_before, range_length=length, range_start=start
+            insert_before=insert_before,
+            range_length=length,
+            range_start=start,
         )
 
     insert_before = 0
     while (reorder := get_next_reorder(insert_before)) is not None:
         yield reorder
         insert_before += reorder.range_length
-        moved_items = invertible_current[
-            reorder.range_start : reorder.range_start + reorder.range_length
-        ]
+        moved_items = invertible_current[reorder.range_start : reorder.range_start + reorder.range_length]
         invertible_current.delete(reorder.range_start, reorder.range_length)
         invertible_current.insert(reorder.insert_before, moved_items)
     return

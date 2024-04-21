@@ -6,7 +6,6 @@ from .generators import (
     TrackPopularityGenerator,
 )
 
-
 __all__ = [
     "AlbumGenerator",
     "LabelGenerator",

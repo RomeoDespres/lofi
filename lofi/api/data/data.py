@@ -3,7 +3,8 @@ from typing import Iterator
 
 from pydantic import BaseModel
 
-from ... import db
+from lofi import db
+
 from .labels import get_labels
 
 
