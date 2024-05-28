@@ -3,7 +3,7 @@ import logging
 
 
 @functools.lru_cache
-def get_logger(name: str) -> logging.Logger:
+def get_logger(name: str = "lofi") -> logging.Logger:
     logger = logging.getLogger(name)
     if len(logger.handlers) == 0:
         logger.setLevel(logging.INFO)
@@ -16,3 +16,6 @@ def get_logger(name: str) -> logging.Logger:
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
     return logger
+
+
+LOGGER = get_logger()

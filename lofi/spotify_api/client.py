@@ -15,9 +15,9 @@ from typing import (
     cast,
 )
 
-import spotipy  # type: ignore[import]
+import spotipy  # type: ignore[import-untyped]
 from requests import ConnectionError, ReadTimeout
-from spotipy.oauth2 import SpotifyOAuth  # type: ignore[import]
+from spotipy.oauth2 import SpotifyOAuth  # type: ignore[import-untyped]
 from tqdm import tqdm
 
 from lofi import db, env

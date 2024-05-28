@@ -6,9 +6,14 @@
 .coverage
 .env
 .mypy_cache
+.next
 .pytest_cache
 .vscode
 __pycache__
 env
 build
+google_api_token.json
 pgsql
+dist
+next-env.d.ts
+sqlite_dump

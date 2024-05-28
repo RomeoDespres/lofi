@@ -27,11 +27,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
-      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       DB_NAME: lofi.db
+      DRIVE_DB_FILE: lofi.db
+      GOOGLE_API_TOKEN: ${{ secrets.GOOGLE_API_TOKEN }}
       NEW_LOFI_PLAYLIST_ID: 4FDJIsW0avzmwWxpX67c4h
       SPOTIPY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
       SPOTIPY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
@@ -57,6 +55,17 @@ jobs:
           pip install -e .
           cd frontend
           npm i
+
+      - name: Create Google API token cache
+        run: echo "$GOOGLE_API_TOKEN" >> google_api_token.json
+
+      - name: Download database
+        run: lofi db download
+
+      - name: Store Google token cache into secret
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN_TO_SET_SECRETS }}
+        run: gh secret set GOOGLE_WMF_TOOLS_API_TOKEN < google_api_token.json
 
       - name: Generate API data
         run: lofi frontend generate-data
