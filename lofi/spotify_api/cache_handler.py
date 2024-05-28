@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import spotipy  # type: ignore[import]
+import spotipy  # type: ignore[import-untyped]
 
 from lofi import db
 

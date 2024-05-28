@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import contextlib
 import pathlib
-from collections import defaultdict
 from typing import Iterator, Literal
 
 import pytest
@@ -11,57 +9,12 @@ import alembic.command
 import alembic.config
 import lofi.db.connection
 import lofi.etl.log
+import lofi.log
 import lofi.spotify_api.log
 from lofi import db, log
+from lofi.db.connection import get_temp_file_path
 
-from .utils import (
-    AlbumGenerator,
-    LabelGenerator,
-    PlaylistGenerator,
-    TrackGenerator,
-    TrackPopularityGenerator,
-)
-
-
-class PatchedS3Client:
-    """Patched S3 client for testing purposes.
-
-    Files can be uploaded and downloaded into a memory cache
-    with the same API as `boto3.client("s3")`.
-    """
-
-    def __init__(self) -> None:
-        self.files: dict[tuple[str, str], bytes] = defaultdict(bytes)
-
-    def download_file(self, bucket: str, key: str, filename: str) -> None:
-        """Download file from memory cache into `filename`.
-
-        Parameters
-        ----------
-        bucket
-            Emulated S3 bucket name.
-        key
-            Emulated S3 file name.
-        filename
-            Name of the file to download into.
-
-        """
-        pathlib.Path(filename).write_bytes(self.files[bucket, key])
-
-    def upload_file(self, filename: str, bucket: str, key: str) -> None:
-        """Upload file from `filename` to memory cache.
-
-        Parameters
-        ----------
-        filename
-            Name of the file to upload into emulated S3 bucket.
-        bucket
-            Emulated S3 bucket name.
-        key
-            Emulated S3 file name.
-
-        """
-        self.files[bucket, key] = pathlib.Path(filename).read_bytes()
+from .utils import AlbumGenerator, LabelGenerator, PlaylistGenerator, TrackGenerator, TrackPopularityGenerator
 
 
 @pytest.fixture()
@@ -75,16 +28,6 @@ def label_generator() -> LabelGenerator:
 
 
 @pytest.fixture(autouse=True)
-def _no_local_db(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Temporarily delete the `LOCAL_DB` environement variable.
-
-    Prevents overwriting the true local db when testing during
-    local development.
-    """
-    monkeypatch.delenv("LOCAL_DB", raising=False)
-
-
-@pytest.fixture(autouse=True)
 def _no_spotify_user_id(monkeypatch: pytest.MonkeyPatch) -> None:
     """Temporarily delete the `SPOTIFY_USER_ID` environement variable.
 
@@ -94,27 +37,14 @@ def _no_spotify_user_id(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 @pytest.fixture()
-def patch_get_s3_client(monkeypatch: pytest.MonkeyPatch) -> PatchedS3Client:
-    """Patch `lofi` to use `PatchedS3Client` instead of boto3.
-
-    Returns
-    -------
-    PatchedS3Client instance.
-
-    """
-    s3_client = PatchedS3Client()
-
-    @contextlib.contextmanager
-    def patched() -> Iterator[PatchedS3Client]:
-        yield s3_client
-
-    monkeypatch.setattr(lofi.db.connection, "get_s3_client", patched)
-
-    return s3_client
+def _patch_connect(temp_db_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    original_connect = lofi.db.connect
+    monkeypatch.setattr(lofi.db, "connect", lambda: original_connect(str(temp_db_path.absolute())))
 
 
 @pytest.fixture(autouse=True)
 def _patch_loggers(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(lofi.log, "LOGGER", log.get_logger("lofi:test"))
     monkeypatch.setattr(lofi.etl.log, "LOGGER", log.get_logger("lofi:test:etl"))
     monkeypatch.setattr(lofi.spotify_api.log, "LOGGER", log.get_logger("lofi:test:spotify_api"))
 
@@ -139,7 +69,7 @@ def run_alembic_migrations(session: db.Session, migration_type: Literal["upgrade
 
 
 @pytest.fixture()
-def session(patch_get_s3_client: PatchedS3Client) -> Iterator[db.Session]:  # noqa: ARG001
+def session(temp_db_path: pathlib.Path) -> Iterator[db.Session]:
     """Yield a SQLAlchemy session connected to a test database.
 
     Session is rolled back on exit.
@@ -149,10 +79,16 @@ def session(patch_get_s3_client: PatchedS3Client) -> Iterator[db.Session]:  # no
     Connected SQLAlchemy session.
 
     """
-    with db.connect() as session:
+    with db.connect(str(temp_db_path.absolute())) as session:
         run_alembic_migrations(session, "upgrade")
         yield session
         session.rollback()
+
+
+@pytest.fixture()
+def temp_db_path() -> Iterator[pathlib.Path]:
+    with get_temp_file_path() as temp_path:
+        yield temp_path
 
 
 @pytest.fixture()

@@ -1,7 +1,6 @@
 from .connection import (
     Session,
     connect,
-    download_db,
     download_local_db,
     get_url,
     upload_local_db,
@@ -41,7 +40,6 @@ __all__ = [
     "TrackPopularity",
     "User",
     "connect",
-    "download_db",
     "download_local_db",
     "get_url",
     "upload_local_db",

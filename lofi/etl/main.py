@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 from typing import Iterable, Protocol, Sequence
 
-from spotipy import SpotifyException  # type: ignore[import]
+from spotipy import SpotifyException  # type: ignore[import-untyped]
 from sqlalchemy import func, join, select, union
 from tqdm import tqdm
 
