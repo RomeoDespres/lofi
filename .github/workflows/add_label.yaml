@@ -45,6 +45,9 @@ jobs:
       - name: Add label
         run: lofi add-label --name="${{ inputs.label_name }}"
 
+      - name: Run ETL
+        run: lofi etl
+
       - name: Upload database
         run: lofi db upload
 
