@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from setuptools import setup
+from setuptools import find_packages, setup
 
 name = "lofi"
 here = Path(__file__).absolute().parent
@@ -19,7 +19,7 @@ setup(
     maintainer="RomeoDespres",
     name=name,
     version="1.0.0",
-    packages=["lofi"],
+    packages=find_packages(),
     install_requires=get_requirements(requirements_path),
     extras_require={"dev": get_requirements(dev_requirements_path)},
     include_package_data=True,

@@ -14,8 +14,7 @@ import sqlalchemy
 from sqlalchemy import Engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
-from lofi.log import LOGGER
-
+from ..log import LOGGER  # noqa: TID252
 from . import google_api
 
 __all__ = ["Session", "connect", "get_url", "with_connection"]
