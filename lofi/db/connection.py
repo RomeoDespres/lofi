@@ -41,17 +41,23 @@ def create_engine(db_name: str) -> Engine:
 
 
 @contextlib.contextmanager
-def connect(db_name: str = os.environ["DB_NAME"]) -> Iterator[Session]:
+def connect(db_name: str | None = None) -> Iterator[Session]:
     """Connect to database."""
+    if db_name is None:
+        db_name = os.environ["DB_NAME"]
     with get_sessionmaker(db_name)() as session, session.begin():
         yield session
 
 
-def download_local_db(
-    drive_file_name: str = os.environ["DRIVE_DB_FILE"],
-    db_path: pathlib.Path = pathlib.Path(os.environ["DB_NAME"]),
-) -> None:
+def download_local_db(drive_file_name: str | None = None, db_path: pathlib.Path | None = None) -> None:
+    if drive_file_name is None:
+        drive_file_name = os.environ["DRIVE_DB_FILE"]
+
+    if db_path is None:
+        db_path = pathlib.Path(os.environ["DB_NAME"])
+
     LOGGER.info("Downloading compressed database")
+
     drive = google_api.get_google_drive_client()
     with get_temp_file_path() as zipped_path:
         google_api.download_file(drive, drive_file_name, zipped_path)
@@ -81,10 +87,13 @@ def get_url(db_name: str) -> str:
     return f"sqlite:///{db_name}"
 
 
-def upload_local_db(
-    drive_file_name: str = os.environ["DRIVE_DB_FILE"],
-    db_path: pathlib.Path = pathlib.Path(os.environ["DB_NAME"]),
-) -> None:
+def upload_local_db(drive_file_name: str | None = None, db_path: pathlib.Path | None = None) -> None:
+    if drive_file_name is None:
+        drive_file_name = os.environ["DRIVE_DB_FILE"]
+
+    if db_path is None:
+        db_path = pathlib.Path(os.environ["DB_NAME"])
+
     with get_temp_file_path() as zipped_path:
         with db_path.open("rb") as in_file, gzip.open(zipped_path, mode="wb") as out_file:
             LOGGER.info("Compressing database")
