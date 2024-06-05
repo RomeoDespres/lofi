@@ -48,4 +48,4 @@ jobs:
       - name: Store Google token cache into secret
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN_TO_SET_SECRETS }}
-        run: gh secret set GOOGLE_WMF_TOOLS_API_TOKEN < google_api_token.json
+        run: gh secret set GOOGLE_API_TOKEN < google_api_token.json
