@@ -1,5 +1,5 @@
 import pathlib
-from typing import Iterator
+from collections.abc import Iterator
 
 from pydantic import BaseModel
 

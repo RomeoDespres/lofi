@@ -3,7 +3,8 @@ from __future__ import annotations
 import abc
 import datetime
 import random
-from typing import Any, Generic, Mapping, Sequence, TypeVar, cast, get_args, get_origin
+from collections.abc import Mapping, Sequence
+from typing import Any, Generic, TypeVar, cast, get_args, get_origin
 
 _D = TypeVar("_D", bound=Mapping[str, Any])
 _T = TypeVar("_T")

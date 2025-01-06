@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Iterable, Protocol, Sequence
+from typing import TYPE_CHECKING, Protocol
 
 from spotipy import SpotifyException  # type: ignore[import-untyped]
 from sqlalchemy import func, join, select, union
@@ -12,6 +12,9 @@ from lofi.spotify_api import Album, ImageUrl, Playlist, SearchAlbum, SpotifyAPIC
 
 from .errors import LabelAlreadyExistsError
 from .log import LOGGER
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
 
 
 class HasIdAndName(Protocol):

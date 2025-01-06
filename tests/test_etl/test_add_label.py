@@ -10,19 +10,19 @@ from tests.utils import LabelGenerator, PlaylistGenerator, load_data_output
 from .conftest import get_spotify_api_client_patch
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 def playlist(session: db.Session, playlist_generator: PlaylistGenerator) -> db.Playlist:  # noqa: ARG001
     return playlist_generator.generate()
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 def label(session: db.Session, playlist: db.Playlist, label_generator: LabelGenerator) -> db.Label:  # noqa: ARG001
     return label_generator.generate(playlist=playlist)
 
 
-@pytest.fixture()
+@pytest.fixture
 def _patch_spotify_api_client(
     session: db.Session,
     monkeypatch: pytest.MonkeyPatch,

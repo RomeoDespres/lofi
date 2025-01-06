@@ -1,5 +1,6 @@
 import functools
-from typing import Callable, Concatenate, ParamSpec, Protocol, Sequence, TypeVar
+from collections.abc import Sequence
+from typing import Callable, Concatenate, ParamSpec, Protocol, TypeVar
 
 from lofi import db
 

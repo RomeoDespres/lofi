@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Generic, Iterator, Sequence, TypeVar, overload
+from typing import TYPE_CHECKING, Generic, TypeVar, overload
 
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Sequence
 
 _T = TypeVar("_T")
 

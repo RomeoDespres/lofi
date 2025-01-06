@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pathlib
-from typing import Iterator, Literal
+from typing import TYPE_CHECKING, Literal
 
 import pytest
 
@@ -16,13 +16,16 @@ from lofi.db.connection import get_temp_file_path
 
 from .utils import AlbumGenerator, LabelGenerator, PlaylistGenerator, TrackGenerator, TrackPopularityGenerator
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
-@pytest.fixture()
+
+@pytest.fixture
 def album_generator() -> AlbumGenerator:
     return AlbumGenerator()
 
 
-@pytest.fixture()
+@pytest.fixture
 def label_generator() -> LabelGenerator:
     return LabelGenerator()
 
@@ -36,7 +39,7 @@ def _no_spotify_user_id(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("SPOTIFY_USER_ID", raising=False)
 
 
-@pytest.fixture()
+@pytest.fixture
 def _patch_connect(temp_db_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
     original_connect = lofi.db.connect
     monkeypatch.setattr(lofi.db, "connect", lambda: original_connect(str(temp_db_path.absolute())))
@@ -49,7 +52,7 @@ def _patch_loggers(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(lofi.spotify_api.log, "LOGGER", log.get_logger("lofi:test:spotify_api"))
 
 
-@pytest.fixture()
+@pytest.fixture
 def playlist_generator() -> PlaylistGenerator:
     return PlaylistGenerator()
 
@@ -68,7 +71,7 @@ def run_alembic_migrations(session: db.Session, migration_type: Literal["upgrade
         raise ValueError(msg)
 
 
-@pytest.fixture()
+@pytest.fixture
 def session(temp_db_path: pathlib.Path) -> Iterator[db.Session]:
     """Yield a SQLAlchemy session connected to a test database.
 
@@ -85,17 +88,17 @@ def session(temp_db_path: pathlib.Path) -> Iterator[db.Session]:
         session.rollback()
 
 
-@pytest.fixture()
+@pytest.fixture
 def temp_db_path() -> Iterator[pathlib.Path]:
     with get_temp_file_path() as temp_path:
         yield temp_path
 
 
-@pytest.fixture()
+@pytest.fixture
 def track_generator() -> TrackGenerator:
     return TrackGenerator()
 
 
-@pytest.fixture()
+@pytest.fixture
 def track_popularity_generator() -> TrackPopularityGenerator:
     return TrackPopularityGenerator()

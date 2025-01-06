@@ -5,18 +5,18 @@ import itertools
 import operator
 import time
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Concatenate,
-    Iterable,
     ParamSpec,
-    Sequence,
     TypeVar,
     cast,
 )
 
 import spotipy  # type: ignore[import-untyped]
-from requests import ConnectionError, ReadTimeout
+from requests import ConnectionError as RequestsConnectionError
+from requests import ReadTimeout
 from spotipy.oauth2 import SpotifyOAuth  # type: ignore[import-untyped]
 from tqdm import tqdm
 
@@ -35,6 +35,9 @@ from .models import (
     User,
 )
 from .tracklist_utils import get_tracklist_reorders
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")
@@ -76,7 +79,7 @@ def retry_on_timeout(
         for i in range(11):
             try:
                 return func(self, *args, **kwargs)
-            except (ReadTimeout, ConnectionError):  # noqa: PERF203
+            except (ReadTimeout, RequestsConnectionError):  # noqa: PERF203
                 if i == max_retries:
                     raise
                 n = 2**i
@@ -149,7 +152,7 @@ class SpotifyAPIClient:
         return list(map(ArtistAlbum.model_validate, self._get_items(items)))
 
     @retry_on_timeout
-    def create_playlist(  # noqa: PLR0913
+    def create_playlist(
         self,
         name: str,
         description: str = "",

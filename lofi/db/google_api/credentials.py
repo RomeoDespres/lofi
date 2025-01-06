@@ -5,8 +5,8 @@ import os
 import pathlib
 from typing import Any, cast
 
-from google.auth.transport.requests import Request  # type: ignore[import-untyped]
-from google.oauth2.credentials import Credentials  # type: ignore[import-untyped]
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore[import-untyped]
 from pydantic import BaseModel, ValidationError
 
@@ -20,7 +20,7 @@ class _GoogleAPIInstalledAppClientConfig(BaseModel):
     client_secret: str
     project_id: str
     redirect_uris: list[str]
-    token_uri: str = "https://oauth2.googleapis.com/token"
+    token_uri: str = "https://oauth2.googleapis.com/token"  # noqa: S105
 
 
 class _GoogleAPIClientConfig(BaseModel):
@@ -52,11 +52,11 @@ def get_google_credentials(scopes: list[str], api_token_path: pathlib.Path = DEF
     credentials: None | Credentials = None
 
     if (user_info := get_google_authorized_user_info(api_token_path)) is not None:
-        credentials = Credentials.from_authorized_user_info(user_info, scopes)
+        credentials = Credentials.from_authorized_user_info(user_info, scopes)  # type: ignore[no-untyped-call]
 
     if credentials is None or not credentials.valid:
         if credentials is not None and credentials.expired and credentials.refresh_token is not None:
-            credentials.refresh(Request())
+            credentials.refresh(Request())  # type: ignore[no-untyped-call]
 
         elif (client_config := get_google_client_config()) is not None:
             # Requires interactive login from user - only used during development
@@ -67,13 +67,13 @@ def get_google_credentials(scopes: list[str], api_token_path: pathlib.Path = DEF
         assert credentials is not None
 
         # Cache new token
-        api_token_path.write_text(credentials.to_json(), "utf8")
+        api_token_path.write_text(credentials.to_json(), "utf8")  # type: ignore[no-untyped-call]
 
     return credentials
 
 
 def get_google_credentials_from_client_config(client_config: dict[str, Any], scopes: list[str]) -> Credentials:
-    return InstalledAppFlow.from_client_config(client_config, scopes).run_local_server(port=0)
+    return InstalledAppFlow.from_client_config(client_config, scopes).run_local_server(port=0)  # type: ignore[no-any-return]
 
 
 def raise_missing_google_credentials(api_token_path: pathlib.Path) -> None:

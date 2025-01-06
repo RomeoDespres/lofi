@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import datetime
-from typing import Generic, Sequence, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from pydantic import BaseModel, field_validator
 
-from lofi import db  # noqa: TCH001
+from lofi import db  # noqa: TC001
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 _T = TypeVar("_T")
 

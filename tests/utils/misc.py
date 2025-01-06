@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import functools
-from typing import Callable, Iterator, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Callable, ParamSpec, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 _T = TypeVar("_T")
 _P = ParamSpec("_P")

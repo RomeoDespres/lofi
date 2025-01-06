@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import datetime
 import time
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING, Any
 from unittest.mock import Mock, patch
 
 import pytest
-from requests import ConnectionError, ReadTimeout
+from requests import ConnectionError as RequestsConnectionError
+from requests import ReadTimeout
 
 from lofi.spotify_api import SpotifyAPIClient
 from lofi.spotify_api.client import chunk, get_first_differing_index, get_tracklist_diffs, retry_on_timeout
@@ -14,6 +15,8 @@ from lofi.spotify_api.errors import PlaylistAlreadyExistsError
 from lofi.spotify_api.models import ArtistAlbum, Playlist, User
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from lofi import db
 
 DEFAULT_PATCHED_PLAYLIST = {
@@ -25,7 +28,7 @@ DEFAULT_PATCHED_PLAYLIST = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def default_user_id(monkeypatch: pytest.MonkeyPatch) -> str:
     monkeypatch.setenv("SPOTIFY_USER_ID", user_id := "foo")
     return user_id
@@ -71,8 +74,8 @@ def test_get_tracklist_diffs(
 
 
 @pytest.mark.usefixtures("default_user_id")
-@pytest.mark.parametrize("exc", [ConnectionError, ReadTimeout])
-def test_retry_on_timeout(session: db.Session, exc: type[ConnectionError | ReadTimeout]) -> None:
+@pytest.mark.parametrize("exc", [RequestsConnectionError, ReadTimeout])
+def test_retry_on_timeout(session: db.Session, exc: type[RequestsConnectionError | ReadTimeout]) -> None:
     with patch.object(time, "sleep") as mock:
 
         @retry_on_timeout

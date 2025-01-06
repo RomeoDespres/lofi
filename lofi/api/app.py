@@ -4,7 +4,7 @@ import json
 import pathlib
 import subprocess
 import tempfile
-from typing import TYPE_CHECKING, Any, Iterator
+from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -12,6 +12,8 @@ from pydantic import BaseModel
 from . import models
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from fastapi.routing import APIRoute
 
 
@@ -55,13 +57,13 @@ def generate_typescript_client(frontend_dir: pathlib.Path) -> None:
         openapi = get_openapi()
         f.write(json.dumps(openapi))
 
-    subprocess.run(
-        ["npx", "openapi-typescript-codegen", "--input", f.name, "--output", "src/api"],  # noqa: S603, S607
+    subprocess.run(  # noqa: S603
+        ["npx", "openapi-typescript-codegen", "--input", f.name, "--output", "src/api"],  # noqa: S607
         cwd=frontend_dir,
         check=False,
     )
-    subprocess.run(
-        ["npx", "prettier", "src", "--write", "--log-level", "silent"],  # noqa: S603, S607
+    subprocess.run(  # noqa: S603
+        ["npx", "prettier", "src", "--write", "--log-level", "silent"],  # noqa: S607
         cwd=frontend_dir,
         check=False,
     )

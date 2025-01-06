@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import Iterator
+from typing import TYPE_CHECKING
 
 import pytest
 from sqlalchemy import select
@@ -18,8 +18,11 @@ from tests.utils import (
     load_data_output,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
-@pytest.fixture()
+
+@pytest.fixture
 @load_data_output
 @iterator_to_list
 def playlists(session: db.Session, playlist_generator: PlaylistGenerator) -> Iterator[db.Playlist]:  # noqa: ARG001
@@ -27,30 +30,30 @@ def playlists(session: db.Session, playlist_generator: PlaylistGenerator) -> Ite
         yield playlist_generator.generate()
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 def lofi_label(session: db.Session, playlists: list[db.Playlist], label_generator: LabelGenerator) -> db.Label:  # noqa: ARG001
     return label_generator.generate(is_lofi=True, playlist_id=playlists[0].id, playlist=playlists[0])
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 def non_lofi_label(session: db.Session, playlists: list[db.Playlist], label_generator: LabelGenerator) -> db.Label:  # noqa: ARG001
     return label_generator.generate(is_lofi=False, playlist_id=playlists[1].id, playlist=playlists[1])
 
 
-@pytest.fixture()
+@pytest.fixture
 def labels(lofi_label: db.Label, non_lofi_label: db.Label) -> list[db.Label]:
     return [lofi_label, non_lofi_label]
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 def new_album(session: db.Session, lofi_label: db.Label, album_generator: AlbumGenerator) -> db.Album:  # noqa: ARG001
     return album_generator.generate(label=lofi_label, label_name=lofi_label.name, release_date=datetime.date.today())
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 def non_lofi_album(session: db.Session, non_lofi_label: db.Label, album_generator: AlbumGenerator) -> db.Album:  # noqa: ARG001
     return album_generator.generate(
@@ -60,7 +63,7 @@ def non_lofi_album(session: db.Session, non_lofi_label: db.Label, album_generato
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 def old_album(session: db.Session, lofi_label: db.Label, album_generator: AlbumGenerator) -> db.Album:  # noqa: ARG001
     return album_generator.generate(
@@ -70,12 +73,12 @@ def old_album(session: db.Session, lofi_label: db.Label, album_generator: AlbumG
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def albums(new_album: db.Album, non_lofi_album: db.Album, old_album: db.Album) -> list[db.Album]:
     return [new_album, non_lofi_album, old_album]
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 @iterator_to_list
 def tracks(session: db.Session, albums: list[db.Album], track_generator: TrackGenerator) -> Iterator[db.Track]:  # noqa: ARG001
@@ -83,7 +86,7 @@ def tracks(session: db.Session, albums: list[db.Album], track_generator: TrackGe
         yield track_generator.generate(album_id=album.id, album=album, position=i)
 
 
-@pytest.fixture()
+@pytest.fixture
 @load_data_output
 @iterator_to_list
 def track_popularities(
@@ -95,7 +98,7 @@ def track_popularities(
         yield track_popularity_generator.generate(track_id=track.id, track=track)
 
 
-@pytest.fixture()
+@pytest.fixture
 def new_lofi_tracklist(session: db.Session, track_popularities: list[db.TrackPopularity]) -> list[db.Track]:  # noqa: ARG001
     ids = get_new_lofi_tracklist(session)
     tracks = list(session.execute(select(db.Track).where(db.Track.id.in_(ids))).scalars())

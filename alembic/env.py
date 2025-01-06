@@ -1,8 +1,7 @@
 # noqa: INP001
 
-from contextlib import nullcontext
+from contextlib import AbstractContextManager, nullcontext
 from logging.config import fileConfig
-from typing import ContextManager
 
 from alembic import context
 from lofi import db
@@ -18,7 +17,7 @@ target_metadata = Base.metadata
 
 def run_migrations_online() -> None:
     if (session := config.attributes.get("session")) is None:  # pragma: no cover
-        cm: ContextManager[db.Session] = db.connect()
+        cm: AbstractContextManager[db.Session] = db.connect()
     else:
         assert isinstance(session, db.Session)
         cm = nullcontext(session)

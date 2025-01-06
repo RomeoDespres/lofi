@@ -8,7 +8,7 @@ import pathlib
 import shutil
 import sqlite3
 import tempfile
-from typing import Any, Callable, Concatenate, Iterator, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Concatenate, ParamSpec, TypeVar
 
 import sqlalchemy
 from sqlalchemy import Engine, event
@@ -17,6 +17,9 @@ from sqlalchemy.orm import Session, sessionmaker
 from lofi.log import LOGGER
 
 from . import google_api
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 __all__ = ["Session", "connect", "get_url", "with_connection"]
 

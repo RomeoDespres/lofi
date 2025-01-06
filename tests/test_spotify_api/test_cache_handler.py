@@ -6,19 +6,19 @@ from lofi.spotify_api.token import Token
 from tests.utils import load_data
 
 
-@pytest.fixture()
+@pytest.fixture
 def user_without_token(session: db.Session) -> db.User:
     load_data(session, user := db.User(id="1", token=None))
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def user_with_token(session: db.Session, token: Token) -> db.User:
     load_data(session, user := db.User(id="2", token=token.model_dump_json()))
     return user
 
 
-@pytest.fixture()
+@pytest.fixture
 def token() -> Token:
     return Token(
         access_token="foo",  # noqa: S106
