@@ -38,7 +38,7 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install -e .[dev]
 
-      - name: Cheking ruff compliance
+      - name: Check ruff compliance
         run: ruff check
 
       - name: Check mypy compliance

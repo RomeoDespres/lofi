@@ -142,7 +142,7 @@ const MobileLabelRow = ({ label }: MobileLabelRowProps) => {
                       {
                         style: "percent",
                         minimumFractionDigits: 1,
-                      }
+                      },
                     )}
                     )
                   </Box>

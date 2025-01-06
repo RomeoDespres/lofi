@@ -134,7 +134,7 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
                         {
                           style: "percent",
                           minimumFractionDigits: 1,
-                        }
+                        },
                       )}
                       )
                     </Box>
