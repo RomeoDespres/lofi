@@ -4,7 +4,7 @@
 
 | Name                                                                        |    Stmts |     Miss |   Cover |   Missing |
 |---------------------------------------------------------------------------- | -------: | -------: | ------: | --------: |
-| alembic/env.py                                                              |       18 |        0 |    100% |           |
+| alembic/env.py                                                              |       17 |        0 |    100% |           |
 | alembic/versions/2b80c7ddb34b\_add\_label\_is\_indie.py                     |       15 |        0 |    100% |           |
 | alembic/versions/4b7adbd648dc\_add\_snapshot\_playlist\_relationship.py     |       14 |        0 |    100% |           |
 | alembic/versions/7a960d8298ac\_add\_label\_playlist\_image.py               |       10 |        0 |    100% |           |
@@ -15,7 +15,7 @@
 | alembic/versions/fcba2a965e33\_add\_popularity\_to\_streams\_reference\_.py |       10 |        0 |    100% |           |
 | lofi/\_\_init\_\_.py                                                        |        4 |        0 |    100% |           |
 | lofi/db/\_\_init\_\_.py                                                     |        3 |        0 |    100% |           |
-| lofi/db/connection.py                                                       |       76 |       24 |     68% |53-67, 91-104 |
+| lofi/db/connection.py                                                       |       76 |       24 |     68% |56-70, 94-107 |
 | lofi/db/google\_api/\_\_init\_\_.py                                         |        2 |        0 |    100% |           |
 | lofi/db/google\_api/credentials.py                                          |       48 |       23 |     52% |31-33, 37-48, 52-72, 76, 80-85 |
 | lofi/db/google\_api/drive.py                                                |       39 |       25 |     36% |19-20, 25-26, 30-32, 36-46, 50-54, 58-59 |
@@ -24,14 +24,14 @@
 | lofi/etl/\_\_init\_\_.py                                                    |        2 |        0 |    100% |           |
 | lofi/etl/errors.py                                                          |        3 |        0 |    100% |           |
 | lofi/etl/log.py                                                             |        2 |        0 |    100% |           |
-| lofi/etl/main.py                                                            |      215 |      152 |     29% |47-51, 55-58, 62-72, 76-88, 92-95, 99-101, 105-108, 112-119, 123, 127-128, 132-143, 147-161, 165-167, 171-172, 232-233, 237-244, 249-251, 255-261, 266-278, 282-283, 287-301, 305-310, 314-328, 332-335, 339-344, 348-370, 380-382, 386-389, 398-411, 415-416, 420-433, 443-445 |
+| lofi/etl/main.py                                                            |      215 |      152 |     29% |50-54, 58-61, 65-75, 79-91, 95-98, 102-104, 108-111, 115-122, 126, 130-131, 135-146, 150-164, 168-170, 174-175, 235-236, 240-247, 252-254, 258-264, 269-281, 285-286, 290-304, 308-313, 317-331, 335-338, 342-347, 351-373, 383-385, 389-392, 401-414, 418-419, 423-436, 446-448 |
 | lofi/log.py                                                                 |       14 |        0 |    100% |           |
 | lofi/spotify\_api/\_\_init\_\_.py                                           |        3 |        0 |    100% |           |
 | lofi/spotify\_api/cache\_handler.py                                         |       27 |        0 |    100% |           |
-| lofi/spotify\_api/client.py                                                 |      148 |       21 |     86% |134-144, 190-192, 210-211, 215-216, 226-228, 237-244 |
+| lofi/spotify\_api/client.py                                                 |      149 |       21 |     86% |137-147, 193-195, 213-214, 218-219, 229-231, 240-247 |
 | lofi/spotify\_api/errors.py                                                 |        5 |        0 |    100% |           |
 | lofi/spotify\_api/log.py                                                    |        2 |        0 |    100% |           |
-| lofi/spotify\_api/models.py                                                 |       61 |        1 |     98% |        75 |
+| lofi/spotify\_api/models.py                                                 |       61 |        1 |     98% |        78 |
 | lofi/spotify\_api/token.py                                                  |        8 |        0 |    100% |           |
 | lofi/spotify\_api/tracklist\_utils.py                                       |       59 |        0 |    100% |           |
 |                                                                   **TOTAL** |  **968** |  **249** | **74%** |           |
