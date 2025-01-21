@@ -5,6 +5,7 @@ Revises: 34f171ff838a
 Create Date: 2023-08-04 11:11:15.398319
 
 """
+
 import sqlalchemy as sa
 
 from alembic import op
@@ -20,7 +21,10 @@ def upgrade() -> None:
     op.create_table(
         "snapshot",
         sa.Column(
-            "id", sa.String(), nullable=False, comment="Spotify playlist snapshot ID",
+            "id",
+            sa.String(),
+            nullable=False,
+            comment="Spotify playlist snapshot ID",
         ),
         sa.Column(
             "position",

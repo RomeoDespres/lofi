@@ -5,6 +5,7 @@ Revises: 2b80c7ddb34b
 Create Date: 2024-01-06 13:54:14.003215
 
 """
+
 import sqlalchemy as sa
 
 from alembic import op
@@ -25,7 +26,9 @@ def upgrade() -> None:
         sa.Column("streams_q2", sa.BigInteger(), nullable=False),
         sa.Column("streams_q3", sa.BigInteger(), nullable=False),
         sa.PrimaryKeyConstraint(
-            "date", "popularity", name=op.f("pk_popularity_streams"),
+            "date",
+            "popularity",
+            name=op.f("pk_popularity_streams"),
         ),
     )
 

@@ -26,6 +26,7 @@ line-length = 120
 
 [tool.ruff.lint]
 ignore = [
+    "COM812",
     "D100",
     "D101",
     "D102",
@@ -36,6 +37,7 @@ ignore = [
     "D203",
     "D213",
     "DTZ011",
+    "ISC001",
     "PD901",
     "S101",
 ]
