@@ -1,8 +1,11 @@
 import pathlib
+import subprocess
 
 import click
 
 import lofi
+from lofi.db.google_api import get_google_drive_client
+from lofi.db.google_api.credentials import DEFAULT_API_TOKEN_PATH
 
 
 @click.group
@@ -27,6 +30,17 @@ def etl() -> None:
 @main.group
 def db() -> None:
     """Database commands."""
+
+
+@db.command
+def auth() -> None:
+    """Regenerate Google API token to reach database."""
+    DEFAULT_API_TOKEN_PATH.unlink(missing_ok=True)
+    get_google_drive_client()
+    subprocess.run(  # noqa: S603
+        ["gh", "secret", "set", "GOOGLE_API_TOKEN", "--body", DEFAULT_API_TOKEN_PATH.read_text()],  # noqa: S607
+        check=False,
+    )
 
 
 @db.command
