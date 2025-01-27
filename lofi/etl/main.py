@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 
 from spotipy import SpotifyException  # type: ignore[import-untyped]
 from sqlalchemy import func, join, select, union
 from tqdm import tqdm
 
 from lofi import db, env
-from lofi.spotify_api import Album, ImageUrl, Playlist, SearchAlbum, SpotifyAPIClient, Track
+from lofi.spotify_api import Album, Artist, ImageUrl, Playlist, SearchAlbum, SpotifyAPIClient, Track
 
 from .errors import LabelAlreadyExistsError
 from .log import LOGGER
@@ -40,6 +40,32 @@ def add_label(session: db.Session, label_name: str) -> None:
     db_playlist = session.merge(db.Playlist(id=playlist.id, is_editorial=False))
     session.add(db.Label(name=label_name, is_indie=False, playlist=db_playlist))
     session.flush()
+
+
+def collect_artist_images(api: SpotifyAPIClient, session: db.Session) -> None:
+    def get_image_width(image: ImageUrl) -> int:
+        return 0 if image.width is None else image.width
+
+    def get_image_url(artist: Artist, size: Literal["smallest", "largest"]) -> str | None:
+        if not artist.images:
+            return None
+
+        func = min if size == "smallest" else max
+
+        return func(artist.images, key=get_image_width).url
+
+    ids = session.execute(select(db.Artist.id).where(db.Artist.image_url_l.is_(None))).scalars().all()
+    LOGGER.info(f"Collecting {len(ids):,} artist images")
+    artists = api.artists(ids)
+    for artist in artists:
+        session.merge(
+            db.Artist(
+                id=artist.id,
+                name=artist.name,
+                image_url_s=get_image_url(artist, "smallest"),
+                image_url_l=get_image_url(artist, "largest"),
+            )
+        )
 
 
 def collect_albums(
@@ -274,6 +300,7 @@ def run(session: db.Session) -> None:
         )
         update_playlist(session, label, playlists[label.playlist_id])
     collect_popularity(session)
+    collect_artist_images(SpotifyAPIClient(session), session)
     update_new_lofi(session)
     update_playlist_images(session, playlists.values())
     update_editorial_playlists(session)
@@ -347,6 +374,18 @@ def upload_album_popularity(session: db.Session, album: Album) -> None:
 
 def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
     LOGGER.info(f"Uploading {len(albums):,} albums")
+
+    def get_image_width(image: ImageUrl) -> int:
+        return 0 if image.width is None else image.width
+
+    def get_image_url(album: Album, size: Literal["smallest", "largest"]) -> str | None:
+        if not album.images:
+            return None
+
+        func = min if size == "smallest" else max
+
+        return func(album.images, key=get_image_width).url
+
     for album in tqdm(albums):
         if session.get(db.Label, album.label) is None:
             session.merge(
@@ -360,6 +399,8 @@ def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
         session.merge(
             db.Album(
                 id=album.id,
+                image_url_l=get_image_url(album, "largest"),
+                image_url_s=get_image_url(album, "smallest"),
                 label_name=album.label,
                 name=album.name,
                 release_date=album.release_date,
