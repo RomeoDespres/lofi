@@ -54,7 +54,7 @@ def collect_artist_images(api: SpotifyAPIClient, session: db.Session) -> None:
 
         return func(artist.images, key=get_image_width).url
 
-    ids = session.execute(select(db.Artist.id)).scalars().all()
+    ids = session.execute(select(db.Artist.id).where(db.Artist.image_url_l.is_(None))).scalars().all()
     LOGGER.info(f"Collecting {len(ids):,} artist images")
     artists = api.artists(ids)
     for artist in artists:
