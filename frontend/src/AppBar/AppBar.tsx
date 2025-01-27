@@ -1,8 +1,9 @@
 import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
 import Typography from "@mui/joy/Typography";
+import SearchBar from "../SearchBar";
+import MobileSidebar from "../Sidebar/MobileSidebar";
 import ContactButton from "./ContactButton";
-import SearchBar from "./SearchBar";
 export interface AppBarProps {
   title: string;
 }
@@ -31,11 +32,15 @@ const AppBar = ({ title }: AppBarProps) => {
         width="100%"
         zIndex={100}
       >
-        <Grid md={9} xs={12}>
-          <Typography color="primary" level="h1">
-            {title}
-          </Typography>
+        <Grid>
+          <Box alignItems="center" display="flex" gap={2}>
+            <MobileSidebar />
+            <Typography color="primary" level="h1">
+              {title}
+            </Typography>
+          </Box>
         </Grid>
+
         <Grid md={3} xs={12}>
           <Box display="flex" gap={2}>
             <SearchBar />

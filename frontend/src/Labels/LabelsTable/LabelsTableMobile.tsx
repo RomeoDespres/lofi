@@ -6,7 +6,7 @@ import Grid from "@mui/joy/Grid";
 import Sheet from "@mui/joy/Sheet";
 
 import Button from "@mui/joy/Button";
-import { Label } from "../api";
+import { Label } from "../../api";
 import LabelsTableHeaderWithInfoIcon from "./LabelsTableHeaderWithInfoIcon";
 import { LabelsTableImplementationProps } from "./LabelsTableImplementationProps";
 import PopularityBar from "./PopularityBar";

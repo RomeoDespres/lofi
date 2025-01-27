@@ -1,5 +1,5 @@
 import Input from "@mui/joy/Input";
-import textMatchesQuery from "./LabelsTable/textMatchesQuery";
+import textMatchesQuery from "./Labels/LabelsTable/textMatchesQuery";
 import useIsMobile from "./useIsMobile";
 
 const SearchBar = () => {
