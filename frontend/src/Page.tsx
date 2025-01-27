@@ -1,5 +1,6 @@
 import Box from "@mui/joy/Box";
 import React from "react";
+import { useLocation } from "react-router";
 import AppBar from "./AppBar/AppBar";
 import useIsMobile from "./useIsMobile";
 
@@ -21,9 +22,15 @@ export default function Page({
 }: React.PropsWithChildren<PageProps>) {
   const isMobile = useIsMobile();
 
+  let location = useLocation();
+
   React.useEffect(() => {
     document.title = pageTitle ?? title;
   }, [pageTitle, title]);
+
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
 
   return (
     <>

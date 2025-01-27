@@ -5,6 +5,8 @@ import datetime  # noqa: TC003
 import pydantic
 from humps import camelize
 
+from lofi import db  # noqa: TC001
+
 
 class BaseModel(pydantic.BaseModel):
     model_config = pydantic.ConfigDict(
@@ -37,6 +39,7 @@ class ArtistTrackAlbum(BaseModel):
     label: BasicLabel
     name: str
     release_date: datetime.date
+    type: db.AlbumType
 
 
 class ArtistTrack(BaseModel):

@@ -4,7 +4,7 @@ import json
 import pathlib
 import subprocess
 import tempfile
-from collections.abc import Callable
+from collections.abc import Callable  # noqa: TC003
 from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI

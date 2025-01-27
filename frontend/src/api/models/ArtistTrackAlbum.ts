@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { AlbumType } from "./AlbumType";
 import type { ArtistTrackArtist } from "./ArtistTrackArtist";
 import type { BasicLabel } from "./BasicLabel";
 
@@ -13,4 +14,5 @@ export type ArtistTrackAlbum = {
   label: BasicLabel;
   name: string;
   releaseDate: string;
+  type: AlbumType;
 };

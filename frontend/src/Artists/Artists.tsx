@@ -26,7 +26,7 @@ export default function Artists() {
   const [artist, setArtist] = React.useState<Artist>();
   const [artists, setArtists] = React.useState<ArtistIndex["artists"]>([]);
   const [filteredArtists, setFilteredArtists] = React.useState<ArtistIndex["artists"]>(
-    [],
+    []
   );
   const [vibrantPalette, setVibrantPalette] = React.useState<Palette>();
 
@@ -47,7 +47,7 @@ export default function Artists() {
             .then((palette) => {
               setVibrantPalette(palette);
               setArtist(artist);
-            }),
+            })
     );
   }, [artistId]);
 
@@ -63,7 +63,7 @@ export default function Artists() {
         setFilteredArtists(
           query.length > 2
             ? artists.filter((artist) => textMatchesQuery(artist.name, query))
-            : [],
+            : []
         )
       }
       pageTitle={
@@ -171,8 +171,8 @@ export default function Artists() {
                     acc === undefined || t.album.releaseDate < acc.album.releaseDate
                       ? t
                       : acc,
-                  undefined,
-                ).album.releaseDate,
+                  undefined
+                ).album.releaseDate
               ).toLocaleDateString("en-us", {
                 day: "numeric",
                 month: "long",
@@ -186,7 +186,7 @@ export default function Artists() {
                 new Set(
                   artist.tracks
                     .filter((t) => new Date(t.album.releaseDate) >= twelveMonthsAgo())
-                    .map((t) => t.isrc),
+                    .map((t) => t.isrc)
                 ).size
               }
             </Box>
@@ -211,10 +211,10 @@ export default function Artists() {
             <Grid xs={12} md={4}>
               <ArtistPageAccordion
                 color={vibrantPalette?.LightMuted?.hex}
-                title="Releases by label"
+                title="Tracks by label"
               >
                 <Table
-                  aria-label="releases by label"
+                  aria-label="Tracks by label"
                   sx={(theme) => ({
                     borderRadius: 4,
                     color: theme.palette.neutral[400],
@@ -223,25 +223,25 @@ export default function Artists() {
                     "& td": { pb: 1, pt: 1 },
                     "& thead th:first-child": {
                       borderTopLeftRadius: 8,
-                      pl: 2,
+                      pl: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                       width: "80%",
                     },
                     "& thead th:nth-child(2)": {
                       textAlign: "right",
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                     },
                     "& thead th:last-child": {
                       borderTopRightRadius: 8,
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                     },
-                    "& td:nth-child(1)": { pl: 2 },
+                    "& td:nth-child(1)": { pl: { sm: 2, xs: 1 } },
                     "& td:nth-child(2)": {
                       fontWeight: theme.fontWeight.md,
                       textAlign: "right",
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                     },
                     "& tr:hover": {
                       bgcolor: theme.palette.background.level2,
@@ -278,10 +278,10 @@ export default function Artists() {
             <Grid xs={12} md={4}>
               <ArtistPageAccordion
                 color={vibrantPalette?.LightMuted?.hex}
-                title="Releases by collaborator"
+                title="Tracks by collaborator"
               >
                 <Table
-                  aria-label="releases by label"
+                  aria-label="Tracks by collaborator"
                   sx={(theme) => ({
                     borderRadius: 4,
                     color: theme.palette.neutral[400],
@@ -290,25 +290,25 @@ export default function Artists() {
                     "& td": { pb: 1, pt: 1 },
                     "& thead th:first-child": {
                       borderTopLeftRadius: 8,
-                      pl: 2,
+                      pl: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                       width: "80%",
                     },
                     "& thead th:nth-child(2)": {
                       textAlign: "right",
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                     },
                     "& thead th:last-child": {
                       borderTopRightRadius: 8,
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                     },
-                    "& td:nth-child(1)": { pl: 2 },
+                    "& td:nth-child(1)": { pl: { sm: 2, xs: 1 } },
                     "& td:nth-child(2)": {
                       fontWeight: theme.fontWeight.md,
                       textAlign: "right",
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                     },
                     "& tr:hover": {
                       bgcolor: theme.palette.background.level2,
@@ -353,7 +353,7 @@ export default function Artists() {
                 title="Discography"
               >
                 <Table
-                  aria-label="releases by label"
+                  aria-label="Tracks by label"
                   sx={(theme) => ({
                     borderRadius: 4,
                     color: theme.palette.neutral[400],
@@ -362,25 +362,25 @@ export default function Artists() {
                     "& td": { pb: 1, pt: 1 },
                     "& thead th:first-child": {
                       borderTopLeftRadius: 8,
-                      pl: 2,
+                      pl: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                       width: "80%",
                     },
                     "& thead th:nth-child(2)": {
                       textAlign: "right",
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                     },
                     "& thead th:last-child": {
                       borderTopRightRadius: 8,
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                       verticalAlign: "middle",
                     },
-                    "& td:nth-child(1)": { pl: 2 },
+                    "& td:nth-child(1)": { pl: { sm: 2, xs: 1 } },
                     "& td:nth-child(2)": {
                       fontWeight: theme.fontWeight.md,
                       textAlign: "right",
-                      pr: 2,
+                      pr: { sm: 2, xs: 1 },
                     },
                     "& tr:hover": {
                       bgcolor: theme.palette.background.level2,
@@ -391,42 +391,56 @@ export default function Artists() {
                   <thead>
                     <tr>
                       <th>Release</th>
-                      <th>Tracks</th>
                     </tr>
                   </thead>
                   <tbody>
                     {getDiscography(artist).map((album) => (
                       <tr>
                         <td>
-                          <a
-                            href={`https:/open.spotify.com/album/${album.id}`}
-                            target="_blank"
-                            style={{ color: "inherit", textDecoration: "none" }}
-                          >
-                            <Box
-                              display="flex"
-                              alignItems="center"
-                              gap={1}
-                              fontSize={(theme) => theme.fontSize.sm}
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <a
+                              href={`https:/open.spotify.com/album/${album.id}`}
+                              target="_blank"
+                              style={{ color: "inherit", textDecoration: "none" }}
                             >
                               <img
                                 src={album.imageUrlS ?? ""}
-                                width={50}
+                                width={60}
                                 style={{ borderRadius: 2 }}
                               />
-                              <Box display="flex" flexDirection="column">
-                                {album.name}
+                            </a>
+                            <Box display="flex" flexDirection="column">
+                              <Typography
+                                sx={{ color: (theme) => theme.palette.text.primary }}
+                              >
+                                <a
+                                  href={`https:/open.spotify.com/album/${album.id}`}
+                                  target="_blank"
+                                  style={{ color: "inherit", textDecoration: "none" }}
+                                >
+                                  {album.name}
+                                </a>
+                              </Typography>
+                              <Typography fontSize={(theme) => theme.fontSize.sm}>
+                                {album.artists.map((artist) => artist.name).join(", ")}
+                              </Typography>
+                              <Box
+                                display="flex"
+                                fontSize={(theme) => theme.fontSize.sm}
+                                gap={0.5}
+                                flexWrap="wrap"
+                              >
                                 <Typography>
-                                  {album.artists
-                                    .map((artist) => artist.name)
-                                    .join(", ")}
+                                  {album.type === "single" && album.trackCount > 2
+                                    ? "EP"
+                                    : toTitleCase(album.type)}
                                 </Typography>
+                                ·<Typography>{album.releaseDate}</Typography>·
                                 <Typography>{album.label.name}</Typography>
                               </Box>
                             </Box>
-                          </a>
+                          </Box>
                         </td>
-                        <td>{album.trackCount}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -437,6 +451,13 @@ export default function Artists() {
         </Box>
       )}
     </Page>
+  );
+}
+
+function toTitleCase(str) {
+  return str.replace(
+    /\w\S*/g,
+    (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
   );
 }
 
@@ -452,7 +473,7 @@ function getTopLabels(artist: Artist) {
 
     tracksByLabel.set(
       track.album.label.name,
-      (tracksByLabel.get(track.album.label.name) ?? 0) + 1,
+      (tracksByLabel.get(track.album.label.name) ?? 0) + 1
     );
 
     labels.set(track.album.label.name, track.album.label);
@@ -467,10 +488,10 @@ function getTopLabels(artist: Artist) {
     a.count > b.count
       ? -1
       : a.count < b.count
-        ? 1
-        : a.label.name >= b.label.name
-          ? 1
-          : -1,
+      ? 1
+      : a.label.name >= b.label.name
+      ? 1
+      : -1
   );
 
   return topLabels;
@@ -498,7 +519,7 @@ function getTopCollaborator(artist: Artist) {
 
   return [null, ...tracksByCollaborator.values()].reduce(
     (acc, v) => (acc === null || v === null || v[0] >= acc[0] ? v : acc),
-    null,
+    null
   );
 }
 
@@ -517,7 +538,7 @@ function getTopCollaborators(artist: Artist) {
 
       tracksByCollaborator.set(
         collaborator.id,
-        (tracksByCollaborator.get(collaborator.id) ?? 0) + 1,
+        (tracksByCollaborator.get(collaborator.id) ?? 0) + 1
       );
 
       artistsById.set(collaborator.id, collaborator);
@@ -528,17 +549,17 @@ function getTopCollaborators(artist: Artist) {
     ([artistId, count]) => ({
       artist: artistsById.get(artistId) as ArtistTrackArtist,
       count,
-    }),
+    })
   );
 
   topCollaborators.sort((a, b) =>
     a.count > b.count
       ? -1
       : a.count < b.count
-        ? 1
-        : a.artist.name >= b.artist.name
-          ? 1
-          : -1,
+      ? 1
+      : a.artist.name >= b.artist.name
+      ? 1
+      : -1
   );
 
   return topCollaborators;
@@ -557,7 +578,7 @@ function getDiscography(artist: Artist) {
   });
 
   return [...discography.values()].sort((a1, a2) =>
-    a1.releaseDate <= a2.releaseDate ? 1 : -1,
+    a1.releaseDate <= a2.releaseDate ? 1 : -1
   );
 }
 
