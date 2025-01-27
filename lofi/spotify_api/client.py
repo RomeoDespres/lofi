@@ -27,6 +27,7 @@ from .errors import PlaylistAlreadyExistsError
 from .log import LOGGER
 from .models import (
     Album,
+    Artist,
     ArtistAlbum,
     Playlist,
     PlaylistTrack,
@@ -150,6 +151,16 @@ class SpotifyAPIClient:
     def artist_albums(self, artist_id: str) -> list[ArtistAlbum]:
         items = self.api.artist_albums(artist_id, country="US", limit=50)
         return list(map(ArtistAlbum.model_validate, self._get_items(items)))
+
+    @retry_on_timeout
+    def artists(self, ids: Sequence[str]) -> list[Artist]:
+        artists: list[Any] = []
+        for i in tqdm(range(0, len(ids), 50), unit_scale=50):
+            artists.extend(
+                [a for a in self.api.artists(ids[i : i + 50])["artists"] if a is not None],
+            )
+
+        return list(map(Artist.model_validate, artists))
 
     @retry_on_timeout
     def create_playlist(

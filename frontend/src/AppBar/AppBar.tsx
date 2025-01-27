@@ -1,14 +1,15 @@
 import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
 import Typography from "@mui/joy/Typography";
-import SearchBar from "../SearchBar";
 import MobileSidebar from "../Sidebar/MobileSidebar";
 import ContactButton from "./ContactButton";
+import SearchBar from "./SearchBar";
 export interface AppBarProps {
+  onSearch: (query: string) => void;
   title: string;
 }
 
-const AppBar = ({ title }: AppBarProps) => {
+const AppBar = ({ onSearch, title }: AppBarProps) => {
   return (
     <>
       <Grid
@@ -43,7 +44,7 @@ const AppBar = ({ title }: AppBarProps) => {
 
         <Grid md={3} xs={12}>
           <Box display="flex" gap={2}>
-            <SearchBar />
+            <SearchBar onSearch={onSearch} />
             <ContactButton />
           </Box>
         </Grid>

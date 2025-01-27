@@ -7,6 +7,8 @@ export { CancelablePromise, CancelError } from "./core/CancelablePromise";
 export { OpenAPI } from "./core/OpenAPI";
 export type { OpenAPIConfig } from "./core/OpenAPI";
 
+export type { ArtistIndex } from "./models/ArtistIndex";
+export type { ArtistIndexEntry } from "./models/ArtistIndexEntry";
 export type { Label } from "./models/Label";
 export type { Labels } from "./models/Labels";
 export type { StreamsRange } from "./models/StreamsRange";

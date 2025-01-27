@@ -13,6 +13,16 @@ class BaseModel(pydantic.BaseModel):
     )
 
 
+class ArtistIndexEntry(BaseModel):
+    name: str
+    id: str
+    image_url_s: str | None = None
+
+
+class ArtistIndex(BaseModel):
+    artists: list[ArtistIndexEntry]
+
+
 class StreamsRange(BaseModel):
     max: int
     min: int

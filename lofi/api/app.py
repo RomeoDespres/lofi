@@ -50,6 +50,7 @@ def get_openapi() -> dict[str, Any]:
 
 def get_routes() -> Iterator[Route]:
     yield Route(model=models.Labels, name="get_labels", path="./api/labels.json")
+    yield Route(model=models.ArtistIndex, name="get_artists", path="./api/artistIndex.json")
 
 
 def generate_typescript_client(frontend_dir: pathlib.Path) -> None:

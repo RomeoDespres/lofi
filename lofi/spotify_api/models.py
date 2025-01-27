@@ -20,6 +20,10 @@ class HasIdAndName(BaseModel):
     name: str
 
 
+class Artist(HasIdAndName):
+    images: list[ImageUrl]
+
+
 class User(BaseModel):
     id: str
     display_name: str
