@@ -88,13 +88,14 @@ class Label(Base):
 
 class Artist(Base):
     id: Mapped[str] = mapped_column(primary_key=True, comment="Spotify artist ID")
+    image_url_s: Mapped[str | None] = mapped_column(comment="Spotify artist profile picture URL (small size)")
+    image_url_l: Mapped[str | None] = mapped_column(comment="Spotify artist profile picture URL (large size)")
     name: Mapped[str] = mapped_column(comment="Name of the artist")
 
     albums: Mapped[list[Album]] = relationship(
-        back_populates="artists",
-        secondary=RelArtistAlbum.__table__,
-        order_by="Album.release_date",
+        back_populates="artists", secondary=RelArtistAlbum.__table__, order_by="Album.release_date"
     )
+    tracks: Mapped[list[Track]] = relationship(back_populates="artists", secondary=RelArtistTrack.__table__)
 
 
 class AlbumType(StrEnum):
@@ -105,6 +106,8 @@ class AlbumType(StrEnum):
 
 class Album(Base):
     id: Mapped[str] = mapped_column(primary_key=True, comment="Spotify album ID")
+    image_url_s: Mapped[str | None] = mapped_column(comment="Spotify album cover URL (small size)")
+    image_url_l: Mapped[str | None] = mapped_column(comment="Spotify album cover URL (large size)")
     label_name: Mapped[str] = mapped_column(
         ForeignKey(Label.name),
         comment="Name of the record label of the album",

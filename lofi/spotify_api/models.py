@@ -20,6 +20,10 @@ class HasIdAndName(BaseModel):
     name: str
 
 
+class Artist(HasIdAndName):
+    images: list[ImageUrl]
+
+
 class User(BaseModel):
     id: str
     display_name: str
@@ -85,6 +89,7 @@ class AlbumTrack(HasIdAndName):
 
 
 class Album(SearchAlbum):
+    images: list[ImageUrl]
     label: str
     popularity: int
     tracks: Items[AlbumTrack]
