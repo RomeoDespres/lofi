@@ -374,6 +374,18 @@ def upload_album_popularity(session: db.Session, album: Album) -> None:
 
 def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
     LOGGER.info(f"Uploading {len(albums):,} albums")
+
+    def get_image_width(image: ImageUrl) -> int:
+        return 0 if image.width is None else image.width
+
+    def get_image_url(album: Album, size: Literal["smallest", "largest"]) -> str | None:
+        if not album.images:
+            return None
+
+        func = min if size == "smallest" else max
+
+        return func(album.images, key=get_image_width).url
+
     for album in tqdm(albums):
         if session.get(db.Label, album.label) is None:
             session.merge(
@@ -387,6 +399,8 @@ def upload_albums(session: db.Session, albums: Sequence[Album]) -> None:
         session.merge(
             db.Album(
                 id=album.id,
+                image_url_l=get_image_url(album, "largest"),
+                image_url_s=get_image_url(album, "smallest"),
                 label_name=album.label,
                 name=album.name,
                 release_date=album.release_date,

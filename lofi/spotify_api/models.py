@@ -89,6 +89,7 @@ class AlbumTrack(HasIdAndName):
 
 
 class Album(SearchAlbum):
+    images: list[ImageUrl]
     label: str
     popularity: int
     tracks: Items[AlbumTrack]

@@ -1,15 +1,19 @@
 import Box from "@mui/joy/Box";
 import Grid from "@mui/joy/Grid";
 import Typography from "@mui/joy/Typography";
+import { useNavigate } from "react-router";
 import MobileSidebar from "../Sidebar/MobileSidebar";
 import ContactButton from "./ContactButton";
 import SearchBar from "./SearchBar";
 export interface AppBarProps {
   onSearch: (query: string) => void;
   title: string;
+  titleColor: string | undefined;
+  titleLink: string;
 }
 
-const AppBar = ({ onSearch, title }: AppBarProps) => {
+const AppBar = ({ onSearch, title, titleColor, titleLink }: AppBarProps) => {
+  const navigate = useNavigate();
   return (
     <>
       <Grid
@@ -36,7 +40,12 @@ const AppBar = ({ onSearch, title }: AppBarProps) => {
         <Grid>
           <Box alignItems="center" display="flex" gap={2}>
             <MobileSidebar />
-            <Typography color="primary" level="h1">
+            <Typography
+              color="primary"
+              level="h1"
+              onClick={() => navigate(titleLink)}
+              sx={{ color: titleColor, cursor: "pointer" }}
+            >
               {title}
             </Typography>
           </Box>

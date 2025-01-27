@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime  # noqa: TC003
+
 import pydantic
 from humps import camelize
 
@@ -11,6 +13,45 @@ class BaseModel(pydantic.BaseModel):
         json_schema_serialization_defaults_required=True,
         populate_by_name=True,
     )
+
+
+class ArtistTrackArtist(BaseModel):
+    id: str
+    image_url_s: str | None
+    name: str
+
+
+class BasicLabelPlaylist(BaseModel):
+    image_url: str
+
+
+class BasicLabel(BaseModel):
+    name: str
+    playlist: BasicLabelPlaylist
+
+
+class ArtistTrackAlbum(BaseModel):
+    artists: list[ArtistTrackArtist]
+    id: str
+    image_url_s: str | None
+    label: BasicLabel
+    name: str
+    release_date: datetime.date
+
+
+class ArtistTrack(BaseModel):
+    album: ArtistTrackAlbum
+    artists: list[ArtistTrackArtist]
+    id: str
+    isrc: str
+    name: str
+
+
+class Artist(BaseModel):
+    name: str
+    id: str
+    image_url_l: str | None
+    tracks: list[ArtistTrack]
 
 
 class ArtistIndexEntry(BaseModel):

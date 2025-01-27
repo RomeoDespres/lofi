@@ -4,6 +4,7 @@ import json
 import pathlib
 import subprocess
 import tempfile
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from fastapi import FastAPI
@@ -20,6 +21,7 @@ if TYPE_CHECKING:
 class Route(BaseModel):
     model: type[BaseModel]
     name: str
+    func: Callable | None = None  # type: ignore[type-arg]
     path: str
 
 
@@ -34,7 +36,7 @@ def add_route_to_app(app: FastAPI, route: Route) -> None:
         route.path,
         generate_unique_id_function=generate_unique_id,
         response_model=route.model,
-    )(fake_route)
+    )(fake_route if route.func is None else route.func)
 
 
 def build_fastapi_app() -> FastAPI:
@@ -51,6 +53,13 @@ def get_openapi() -> dict[str, Any]:
 def get_routes() -> Iterator[Route]:
     yield Route(model=models.Labels, name="get_labels", path="./api/labels.json")
     yield Route(model=models.ArtistIndex, name="get_artists", path="./api/artistIndex.json")
+
+    def fake_get_artist_route(artist_id: str) -> models.Artist:  # type: ignore[empty-body]
+        pass
+
+    yield Route(
+        model=models.Artist, name="get_artist", path="./api/artists/{artist_id}.json", func=fake_get_artist_route
+    )
 
 
 def generate_typescript_client(frontend_dir: pathlib.Path) -> None:

@@ -16,6 +16,7 @@ export default function Labels() {
         }
       }}
       title="lofi labels"
+      titleLink="/labels"
     >
       <LabelsTable />
     </Page>

@@ -14,7 +14,7 @@ const SearchBar = ({ onSearch }: SearchBarProps) => {
 
   function handleChange(value: string) {
     setQuery(value);
-    onSearch(value);
+    onSearch(value.replace(/^\s+/, "").replace(/\s+$/, ""));
   }
 
   return (
