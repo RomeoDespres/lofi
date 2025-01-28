@@ -165,19 +165,17 @@ export default function Artists() {
             </Box>
             <Box>
               First tracked release:{" "}
-              {new Date(
-                artist.tracks.reduce(
-                  (acc, t) =>
-                    acc === undefined || t.album.releaseDate < acc.album.releaseDate
-                      ? t
-                      : acc,
-                  undefined
-                ).album.releaseDate
-              ).toLocaleDateString("en-us", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+              {artist.tracks.length > 0
+                ? new Date(
+                    artist.tracks.reduce((acc, t) =>
+                      t.album.releaseDate < acc.album.releaseDate ? t : acc
+                    )?.album.releaseDate ?? undefined
+                  ).toLocaleDateString("en-us", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : "None"}
             </Box>
             <Box>Total tracks: {new Set(artist.tracks.map((t) => t.isrc)).size}</Box>
             <Box>
@@ -454,7 +452,7 @@ export default function Artists() {
   );
 }
 
-function toTitleCase(str) {
+function toTitleCase(str: string) {
   return str.replace(
     /\w\S*/g,
     (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
@@ -570,7 +568,8 @@ function getDiscography(artist: Artist) {
 
   artist.tracks.forEach((track) => {
     if (discography.has(track.album.id)) {
-      discography.get(track.album.id).trackCount++;
+      (discography.get(track.album.id) as ArtistTrackAlbum & { trackCount: number })
+        .trackCount++;
       return;
     }
 
