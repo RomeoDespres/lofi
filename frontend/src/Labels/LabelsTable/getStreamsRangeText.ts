@@ -1,4 +1,4 @@
-import { StreamsRange } from "../api";
+import { StreamsRange } from "../../api";
 import toKMB from "./toKMB";
 
 const getStreamsRangeText = (streams: StreamsRange) =>

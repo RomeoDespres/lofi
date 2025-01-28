@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from lofi import db
 
+from .artists import get_artist_index, get_artists
 from .labels import get_labels
 
 
@@ -20,6 +21,9 @@ def generate_data(frontend_dir: pathlib.Path) -> None:
 
 
 def get_data(session: db.Session) -> Iterator[Datum]:
+    yield Datum(path="artistIndex.json", obj=get_artist_index(session))
+    for artist in get_artists(session):
+        yield Datum(path=f"artists/{artist.id}.json", obj=artist)
     yield Datum(path="labels.json", obj=get_labels(session))
 
 

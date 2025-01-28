@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { DefaultService, Labels } from "../api";
-import useIsMobile from "../useIsMobile";
+import { DefaultService, Labels } from "../../api";
+import useIsMobile from "../../useIsMobile";
 import LabelsTableDesktop from "./LabelsTableDesktop";
 import LabelsTableMobile from "./LabelsTableMobile";
 
