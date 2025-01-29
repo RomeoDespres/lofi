@@ -4,7 +4,7 @@ import datetime
 from typing import TYPE_CHECKING, Literal, Protocol
 
 from spotipy import SpotifyException  # type: ignore[import-untyped]
-from sqlalchemy import func, join, select, union
+from sqlalchemy import func, join, select, union, update
 from tqdm import tqdm
 
 from lofi import db, env
@@ -114,7 +114,7 @@ def collect_label_albums(session: db.Session, label: db.Label, excluded_album_id
     upload_objects_artists(session, tracks)
     upload_objects_artists(session, albums)
     upload_albums(session, albums)
-    upload_tracks(session, tracks)
+    upload_tracks(session, tracks, is_lofi=len(label.filtering_playlists) == 0)
 
 
 def collect_popularity(session: db.Session) -> None:
@@ -151,11 +151,6 @@ def get_all_album_ids(session: db.Session) -> set[str]:
     return set(session.execute(select(db.Album.id)).scalars())
 
 
-def get_editorial_playlists(session: db.Session) -> Sequence[db.Playlist]:
-    sql = select(db.Playlist).where(db.Playlist.is_editorial)
-    return session.execute(sql).scalars().all()
-
-
 def get_expected_tracklist(session: db.Session, label_name: str) -> Sequence[str]:
     subq = (
         select(
@@ -163,7 +158,7 @@ def get_expected_tracklist(session: db.Session, label_name: str) -> Sequence[str
             func.row_number().over(partition_by=db.Track.isrc, order_by=db.Album.release_date).label("track_rank"),
         )
         .select_from(join(db.Track, db.Album))
-        .where(db.Album.label_name == label_name)
+        .where(db.Album.label_name == label_name, db.Track.is_lofi)
         .order_by(db.Album.release_date.desc(), db.Album.id, db.Track.position)
         .subquery()
     )
@@ -271,6 +266,11 @@ def get_track_ids_with_outdated_popularity(session: db.Session, max_tracks: int)
     return session.execute(sql).scalars().all()
 
 
+def get_tracked_playlists(session: db.Session) -> Sequence[db.Playlist]:
+    sql = select(db.Playlist).where(db.Playlist.filter_for_label_name.is_not(None))
+    return session.execute(sql).scalars().all()
+
+
 def get_user_playlists(session: db.Session) -> dict[str, Playlist]:
     """Return an ID -> playlist mapping of all user's playlists."""
     api = SpotifyAPIClient(session)
@@ -293,40 +293,19 @@ def run(session: db.Session) -> None:
     playlists = get_user_playlists(session)
     for i, label in enumerate(labels := get_labels(session)):
         LOGGER.info(f"{i + 1}/{len(labels)} Collecting data for {label.name}")
-        collect_label_albums(
-            session,
-            label,
-            excluded_album_ids=get_all_album_ids(session),
-        )
+        collect_label_albums(session, label, excluded_album_ids=get_all_album_ids(session))
         update_playlist(session, label, playlists[label.playlist_id])
     collect_popularity(session)
     collect_artist_images(SpotifyAPIClient(session), session)
     update_new_lofi(session)
     update_playlist_images(session, playlists.values())
-    update_editorial_playlists(session)
+    update_tracked_playlists(session)
+    update_track_is_lofi(session)
 
 
 def snapshot_is_in_db(session: db.Session, snapshot_id: str) -> bool:
     sql = select(db.Snapshot.id).where(db.Snapshot.id == snapshot_id).limit(1)
     return session.execute(sql).scalar_one_or_none() is not None
-
-
-def update_editorial_playlists(session: db.Session) -> None:
-    LOGGER.info("Updating editorial playlists")
-    api = SpotifyAPIClient(session)
-    not_found_http_status = 404
-    for playlist in tqdm(get_editorial_playlists(session)):
-        try:
-            spotify_playlist = api.playlist(playlist.id)
-        except SpotifyException as e:
-            if e.http_status == not_found_http_status:
-                # This playlist does not exist anymore!
-                continue
-            raise
-        if snapshot_is_in_db(session, spotify_playlist.snapshot_id):
-            continue
-        track_ids = [t.id for t in api.playlist_tracks(playlist.id)]
-        upload_snapshot(session, playlist.id, spotify_playlist.snapshot_id, track_ids)
 
 
 def update_playlist(session: db.Session, label: db.Label, playlist: Playlist) -> None:
@@ -361,6 +340,34 @@ def update_new_lofi(session: db.Session) -> None:
     api = SpotifyAPIClient(session)
     tracklist = get_new_lofi_tracklist(session)
     api.set_playlist_tracks(env.new_lofi_playlist_id(), tracklist, use_reorders=True)
+
+
+def update_track_is_lofi(session: db.Session) -> None:
+    LOGGER.info("Updating track.is_lofi with filtering playlists")
+    filtering_playlist_ids = select(db.Playlist.id).where(db.Playlist.filter_for_label_name.is_not(None))
+    filtering_playlist_track_ids = (
+        select(db.Snapshot.track_id).where(db.Snapshot.playlist_id.in_(filtering_playlist_ids)).distinct()
+    )
+    sql = update(db.Track).where(~db.Track.is_lofi, db.Track.id.in_(filtering_playlist_track_ids)).values(is_lofi=True)
+    session.execute(sql)
+
+
+def update_tracked_playlists(session: db.Session) -> None:
+    LOGGER.info("Updating tracked playlists")
+    api = SpotifyAPIClient(session)
+    not_found_http_status = 404
+    for playlist in tqdm(get_tracked_playlists(session)):
+        try:
+            spotify_playlist = api.playlist(playlist.id)
+        except SpotifyException as e:
+            if e.http_status == not_found_http_status:
+                # This playlist does not exist anymore!
+                continue
+            raise
+        if snapshot_is_in_db(session, spotify_playlist.snapshot_id):
+            continue
+        track_ids = [t.id for t in api.playlist_tracks(playlist.id)]
+        upload_snapshot(session, playlist.id, spotify_playlist.snapshot_id, track_ids)
 
 
 def upload_album_popularity(session: db.Session, album: Album) -> None:
@@ -458,13 +465,14 @@ def upload_track_popularity(session: db.Session, track: Track) -> None:
     session.merge(popularity)
 
 
-def upload_tracks(session: db.Session, tracks: Sequence[Track]) -> None:
+def upload_tracks(session: db.Session, tracks: Sequence[Track], *, is_lofi: bool) -> None:
     LOGGER.info(f"Uploading {len(tracks):,} tracks")
     for track in tqdm(tracks):
         session.merge(
             db.Track(
                 album_id=track.album.id,
                 id=track.id,
+                is_lofi=is_lofi,
                 isrc=track.external_ids.isrc,
                 name=track.name,
                 position=track.track_number,

@@ -30,21 +30,15 @@ def add_quarter_popularities(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_label_playlist_sql() -> Select[tuple[str, str, str | None]]:
-    return select(
-        db.Label.name,
-        db.Label.playlist_id,
-        db.Playlist.image_url,
-    ).select_from(join(db.Label, db.Playlist))
+    return select(db.Label.name, db.Label.playlist_id, db.Playlist.image_url).select_from(
+        join(db.Label, db.Playlist, db.Label.playlist_id == db.Playlist.id)
+    )
 
 
 def get_popularity_to_streams_sql() -> Select[tuple[int, int, int]]:
     max_date = select(func.max(db.PopularityStreams.date)).scalar_subquery()
     return (
-        select(
-            db.PopularityStreams.popularity,
-            db.PopularityStreams.streams_q1,
-            db.PopularityStreams.streams_q3,
-        )
+        select(db.PopularityStreams.popularity, db.PopularityStreams.streams_q1, db.PopularityStreams.streams_q3)
         .where(db.PopularityStreams.date == max_date)
         .order_by(db.PopularityStreams.popularity)
     )
@@ -61,7 +55,7 @@ def get_track_popularity_sql() -> Select[tuple[str, int]]:
             func.row_number().over(partition_by=db.Track.isrc, order_by=db.Album.release_date).label("id_rank"),
         )
         .select_from(join(db.Track, db.Album))
-        .where(db.Album.label_name != "Inside Records")
+        .where(db.Album.label_name != "Inside Records", db.Track.is_lofi)
         .subquery()
     )
     track = (
@@ -74,27 +68,19 @@ def get_track_popularity_sql() -> Select[tuple[str, int]]:
             db.TrackPopularity.track_id,
             db.TrackPopularity.popularity,
             func.row_number()
-            .over(
-                partition_by=db.TrackPopularity.track_id,
-                order_by=db.TrackPopularity.date.desc(),
-            )
+            .over(partition_by=db.TrackPopularity.track_id, order_by=db.TrackPopularity.date.desc())
             .label("date_rank"),
         )
         .where(
             db.TrackPopularity.track_id.in_(
-                select(db.Track.id).where(db.Track.isrc.in_(select(track.c.isrc).scalar_subquery())).scalar_subquery(),
+                select(db.Track.id).where(db.Track.isrc.in_(select(track.c.isrc).scalar_subquery())).scalar_subquery()
             ),
         )
         .subquery()
     )
     popularity = (
-        select(
-            db.Track.isrc,
-            func.max(popularity_subq.c.popularity).label("popularity"),
-        )
-        .select_from(
-            join(db.Track, popularity_subq, db.Track.id == popularity_subq.c.track_id),
-        )
+        select(db.Track.isrc, func.max(popularity_subq.c.popularity).label("popularity"))
+        .select_from(join(db.Track, popularity_subq, db.Track.id == popularity_subq.c.track_id))
         .where(popularity_subq.c.date_rank == 1)
         .group_by(db.Track.isrc)
         .subquery()
@@ -106,9 +92,7 @@ def get_track_popularity_sql() -> Select[tuple[str, int]]:
         .select_from(join(db.Snapshot, db.Track, db.Snapshot.track_id == db.Track.id))
         .where(
             db.Track.isrc.in_(select(track.c.isrc).scalar_subquery()),
-            db.Snapshot.playlist_id.in_(
-                select(db.Playlist.id).where(db.Playlist.is_editorial).scalar_subquery(),
-            ),
+            db.Snapshot.playlist_id.in_(select(db.Playlist.id).where(db.Playlist.is_editorial).scalar_subquery()),
         )
         .subquery()
     )
@@ -119,10 +103,8 @@ def get_track_popularity_sql() -> Select[tuple[str, int]]:
         editorials.c.isrc.is_not(None).label("in_editorial"),
     ).select_from(
         join(track, popularity, track.c.isrc == popularity.c.isrc).join(
-            editorials,
-            track.c.isrc == editorials.c.isrc,
-            isouter=True,
-        ),
+            editorials, track.c.isrc == editorials.c.isrc, isouter=True
+        )
     )
 
 
@@ -155,10 +137,7 @@ def get_labels(session: db.Session) -> models.Labels:
             playlist_id=row["playlist_id"],
             tracks=row["count"],
             tracks_in_editorials=row["in_editorial"],
-            streams=models.StreamsRange(
-                min=int(row["streams_q1"]),
-                max=int(row["streams_q3"]),
-            ),
+            streams=models.StreamsRange(min=int(row["streams_q1"]), max=int(row["streams_q3"])),
         )
         for _, row in df.iterrows()
     ]

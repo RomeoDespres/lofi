@@ -22,6 +22,20 @@ def add_label(session: lofi.db.Session, name: str) -> None:
 
 
 @main.command
+@click.option("--label", help="Label name")
+@click.option("--playlist-id", help="Playlist ID")
+@lofi.db.with_connection
+def add_label_playlist(session: lofi.db.Session, label: str, playlist_id: str) -> None:
+    """Add label to database."""
+    db_label = session.get(lofi.db.Label, label)
+
+    if playlist_id in {p.id for p in db_label.filtering_playlists}:
+        return
+
+    session.add(lofi.db.Playlist(id=playlist_id, is_editorial=False, filter_for_label_name=label))
+
+
+@main.command
 def etl() -> None:
     """Run main ETL."""
     lofi.etl.run()
