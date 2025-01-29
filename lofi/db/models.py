@@ -5,13 +5,7 @@ from enum import StrEnum
 
 from humps import decamelize
 from sqlalchemy import BigInteger, ForeignKey, MetaData, literal
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
-    declared_attr,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -83,7 +77,10 @@ class Label(Base):
     )
 
     albums: Mapped[list[Album]] = relationship(back_populates="label")
-    playlist: Mapped[Playlist] = relationship()
+    filtering_playlists: Mapped[list[Playlist]] = relationship(
+        back_populates="filter_for_label", foreign_keys="Playlist.filter_for_label_name"
+    )
+    playlist: Mapped[Playlist] = relationship(foreign_keys=[playlist_id])
 
 
 class Artist(Base):
@@ -154,6 +151,7 @@ class Track(Base):
         ForeignKey(Album.id),
         comment="Spotify ID of the album of the track",
     )
+    is_lofi: Mapped[bool] = mapped_column(server_default=literal(value=True))
     isrc: Mapped[str] = mapped_column(comment="ISRC of the track")
     name: Mapped[str] = mapped_column(comment="Name of the track")
     position: Mapped[int] = mapped_column(
@@ -185,13 +183,13 @@ class TrackPopularity(Base):
 
 class Playlist(Base):
     id: Mapped[str] = mapped_column(primary_key=True, comment="Spotify playlist ID")
-    image_url: Mapped[str | None] = mapped_column(
-        comment="Cover image URL of the playlist",
-    )
-    is_editorial: Mapped[bool] = mapped_column(
-        comment="Whether playlist is a Spotify editorial playlist",
-    )
+    image_url: Mapped[str | None] = mapped_column(comment="Cover image URL of the playlist")
+    is_editorial: Mapped[bool] = mapped_column(comment="Whether playlist is a Spotify editorial playlist")
+    filter_for_label_name: Mapped[str | None] = mapped_column(ForeignKey(Label.name))
 
+    filter_for_label: Mapped[Label] = relationship(
+        back_populates="filtering_playlists", foreign_keys=[filter_for_label_name]
+    )
     snapshots: Mapped[list[Snapshot]] = relationship(back_populates="playlist")
 
 
@@ -215,6 +213,7 @@ class Snapshot(Base):
     playlist_id: Mapped[str | None] = mapped_column(
         ForeignKey(Playlist.id),
         comment="Id of this snapshot's playlist. NULL for historical values where it wasn't recorded",
+        index=True,
     )
     timestamp: Mapped[datetime.datetime | None] = mapped_column(
         comment="Timestamp at which snapshot was captured. NULL for historical values where it wasn't recorded",
