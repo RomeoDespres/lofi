@@ -131,7 +131,7 @@ def collect_tracks(api: SpotifyAPIClient, albums: Sequence[Album]) -> list[Track
 
 
 def collect_tracks_popularity(api: SpotifyAPIClient, session: db.Session) -> None:
-    ids = get_track_ids_with_outdated_popularity(session, max_tracks=10_000)
+    ids = get_track_ids_with_outdated_popularity(session, max_tracks=25_000)
     LOGGER.info(f"Collecting popularity for {len(ids):,} tracks")
     tracks = api.tracks(ids)
     upload_tracks_popularity(session, tracks)
@@ -139,9 +139,9 @@ def collect_tracks_popularity(api: SpotifyAPIClient, session: db.Session) -> Non
 
 def get_album_ids_with_outdated_popularity(session: db.Session, max_albums: int) -> Sequence[str]:
     sql = (
-        select(db.Album.id)
-        .select_from(join(db.Album, db.AlbumPopularity, isouter=True))
-        .order_by(func.min(db.AlbumPopularity.date).over(partition_by=db.Album.id).nulls_first())
+        select(db.AlbumPopularity.album_id)
+        .group_by(db.AlbumPopularity.album_id)
+        .order_by(func.max(db.AlbumPopularity.date).nulls_first())
         .limit(max_albums)
     )
     return session.execute(sql).scalars().all()
@@ -258,9 +258,9 @@ def get_snapshot(session: db.Session, snapshot_id: str) -> list[str]:
 
 def get_track_ids_with_outdated_popularity(session: db.Session, max_tracks: int) -> Sequence[str]:
     sql = (
-        select(db.Track.id)
-        .select_from(join(db.Track, db.TrackPopularity, isouter=True))
-        .order_by(func.min(db.TrackPopularity.date).over(partition_by=db.Track.id).nulls_first())
+        select(db.TrackPopularity.track_id)
+        .group_by(db.TrackPopularity.track_id)
+        .order_by(func.max(db.TrackPopularity.date).nulls_first())
         .limit(max_tracks)
     )
     return session.execute(sql).scalars().all()
