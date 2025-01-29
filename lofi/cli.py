@@ -28,6 +28,7 @@ def add_label(session: lofi.db.Session, name: str) -> None:
 def add_label_playlist(session: lofi.db.Session, label: str, playlist_id: str) -> None:
     """Add label to database."""
     db_label = session.get(lofi.db.Label, label)
+    assert db_label is not None
 
     if playlist_id in {p.id for p in db_label.filtering_playlists}:
         return
