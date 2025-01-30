@@ -106,8 +106,7 @@ class Album(Base):
     image_url_s: Mapped[str | None] = mapped_column(comment="Spotify album cover URL (small size)")
     image_url_l: Mapped[str | None] = mapped_column(comment="Spotify album cover URL (large size)")
     label_name: Mapped[str] = mapped_column(
-        ForeignKey(Label.name),
-        comment="Name of the record label of the album",
+        ForeignKey(Label.name), comment="Name of the record label of the album", index=True
     )
     name: Mapped[str] = mapped_column(comment="Name of the album")
     release_date: Mapped[datetime.date] = mapped_column(
@@ -148,8 +147,7 @@ class AlbumPopularity(Base):
 class Track(Base):
     id: Mapped[str] = mapped_column(primary_key=True, comment="Spotify track ID")
     album_id: Mapped[str] = mapped_column(
-        ForeignKey(Album.id),
-        comment="Spotify ID of the album of the track",
+        ForeignKey(Album.id), comment="Spotify ID of the album of the track", index=True
     )
     is_lofi: Mapped[bool] = mapped_column(server_default=literal(value=True))
     isrc: Mapped[str] = mapped_column(comment="ISRC of the track")

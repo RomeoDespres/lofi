@@ -36,10 +36,17 @@ def get_label_playlist_sql() -> Select[tuple[str, str, str | None]]:
 
 
 def get_popularity_to_streams_sql() -> Select[tuple[int, int, int]]:
-    max_date = select(func.max(db.PopularityStreams.date)).scalar_subquery()
     return (
-        select(db.PopularityStreams.popularity, db.PopularityStreams.streams_q1, db.PopularityStreams.streams_q3)
-        .where(db.PopularityStreams.date == max_date)
+        select(
+            db.PopularityStreams.popularity,
+            func.first_value(db.PopularityStreams.streams_q1)
+            .over(partition_by=db.PopularityStreams.popularity, order_by=db.PopularityStreams.date.desc())
+            .label("streams_q1"),
+            func.first_value(db.PopularityStreams.streams_q3)
+            .over(partition_by=db.PopularityStreams.popularity, order_by=db.PopularityStreams.date.desc())
+            .label("streams_q3"),
+        )
+        .distinct()
         .order_by(db.PopularityStreams.popularity)
     )
 
