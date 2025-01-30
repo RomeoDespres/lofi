@@ -397,7 +397,7 @@ export default function Artists() {
                         <td>
                           <Box display="flex" alignItems="center" gap={1}>
                             <a
-                              href={`https:/open.spotify.com/album/${album.id}`}
+                              href={`https://open.spotify.com/album/${album.id}`}
                               target="_blank"
                               style={{ color: "inherit", textDecoration: "none" }}
                             >
