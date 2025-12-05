@@ -120,41 +120,6 @@ const MobileLabelRow = ({ label }: MobileLabelRowProps) => {
           <MobileLabelMetric
             left={
               <LabelsTableHeaderWithInfoIcon
-                header="In editorials"
-                info={
-                  "Number of tracks released in the past 6 months " +
-                  "that have been featured in at least one Spotify editorial playlist"
-                }
-              />
-            }
-            right={
-              <>
-                <Box display="inline">{label.tracksInEditorials}</Box>
-                {label.tracksInEditorials === 0 ? null : (
-                  <Box
-                    display="inline"
-                    fontSize={(theme) => theme.typography["body-xs"].fontSize}
-                    pl={1}
-                  >
-                    (
-                    {(label.tracksInEditorials / label.tracks).toLocaleString(
-                      undefined,
-                      {
-                        style: "percent",
-                        minimumFractionDigits: 1,
-                      },
-                    )}
-                    )
-                  </Box>
-                )}
-              </>
-            }
-          />
-        </Grid>
-        <Grid xs={12}>
-          <MobileLabelMetric
-            left={
-              <LabelsTableHeaderWithInfoIcon
                 header="Streams"
                 info={
                   <>

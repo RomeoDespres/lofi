@@ -62,15 +62,6 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
           </th>
           <th>
             <LabelsTableHeaderWithInfoIcon
-              header="In editorials"
-              info={
-                "Number of tracks released in the past 6 months " +
-                "that have been featured in at least one Spotify editorial playlist"
-              }
-            />
-          </th>
-          <th>
-            <LabelsTableHeaderWithInfoIcon
               header="Streams"
               info={
                 <>
@@ -118,28 +109,6 @@ const LabelsTableDesktop = ({ labels }: LabelsTableImplementationProps) => {
                   </Box>
                 </td>
                 <td>{label.tracks}</td>
-                <td>
-                  <Box display="inline">
-                    {label.tracksInEditorials === 0 ? "-" : label.tracksInEditorials}
-                  </Box>
-                  {label.tracksInEditorials === 0 ? null : (
-                    <Box
-                      display="inline"
-                      fontSize={(theme) => theme.typography["body-sm"].fontSize}
-                      pl={1}
-                    >
-                      (
-                      {(label.tracksInEditorials / label.tracks).toLocaleString(
-                        undefined,
-                        {
-                          style: "percent",
-                          minimumFractionDigits: 1,
-                        },
-                      )}
-                      )
-                    </Box>
-                  )}
-                </td>
                 <td>{getStreamsRangeText(label.streams)}</td>
                 <td>
                   <Box display="flex" justifyContent="flex-end">
